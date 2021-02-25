@@ -1,0 +1,99 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickBackupX-BDXCore", "QuickBackupX-BDXCore\QuickBackupX-BDXCore.vcxproj", "{3888F848-AD98-46F2-8BC0-B90324FBB067}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickBackup", "QuickBackup", "{9A630783-8982-4716-BADC-7BD216C49A4B}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		QuickBackupX\backup.cpp = QuickBackupX\backup.cpp
+		QuickBackupX\backup.h = QuickBackupX\backup.h
+		QuickBackupX\bds.hpp = QuickBackupX\bds.hpp
+		QuickBackupX\config.cpp = QuickBackupX\config.cpp
+		QuickBackupX\config.h = QuickBackupX\config.h
+		EULA.txt = EULA.txt
+		QuickBackupX\func.cpp = QuickBackupX\func.cpp
+		QuickBackupX\func.h = QuickBackupX\func.h
+		QuickBackupX\json.cpp = QuickBackupX\json.cpp
+		QuickBackupX\json.h = QuickBackupX\json.h
+		QuickBackupX\logger.cpp = QuickBackupX\logger.cpp
+		QuickBackupX\logger.h = QuickBackupX\logger.h
+		QuickBackupX\md5.cpp = QuickBackupX\md5.cpp
+		QuickBackupX\md5.h = QuickBackupX\md5.h
+		QuickBackupX\pch.cpp = QuickBackupX\pch.cpp
+		QuickBackupX\pch.h = QuickBackupX\pch.h
+		QuickBackupX\properties.cpp = QuickBackupX\properties.cpp
+		QuickBackupX\properties.h = QuickBackupX\properties.h
+		README.md = README.md
+		TODO.md = TODO.md
+		Update.md = Update.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JsonCPP", "JsonCPP", "{694434D7-2784-42D5-9139-123803694832}"
+	ProjectSection(SolutionItems) = preProject
+		QuickBackupX\json\allocator.h = QuickBackupX\json\allocator.h
+		QuickBackupX\json\assertions.h = QuickBackupX\json\assertions.h
+		QuickBackupX\json\config.h = QuickBackupX\json\config.h
+		QuickBackupX\json\forwards.h = QuickBackupX\json\forwards.h
+		QuickBackupX\json\json.h = QuickBackupX\json\json.h
+		QuickBackupX\json\json_features.h = QuickBackupX\json\json_features.h
+		QuickBackupX\json\json_reader.cpp = QuickBackupX\json\json_reader.cpp
+		QuickBackupX\json\json_tool.h = QuickBackupX\json\json_tool.h
+		QuickBackupX\json\json_value.cpp = QuickBackupX\json\json_value.cpp
+		QuickBackupX\json\json_valueiterator.inl = QuickBackupX\json\json_valueiterator.inl
+		QuickBackupX\json\json_writer.cpp = QuickBackupX\json\json_writer.cpp
+		QuickBackupX\json\reader.h = QuickBackupX\json\reader.h
+		QuickBackupX\json\value.h = QuickBackupX\json\value.h
+		QuickBackupX\json\version.h = QuickBackupX\json\version.h
+		QuickBackupX\json\writer.h = QuickBackupX\json\writer.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ZipUtils", "ZipUtils", "{EB3782A2-D4B4-456A-A859-D1EDD9AEDE7A}"
+	ProjectSection(SolutionItems) = preProject
+		QuickBackupX\zip\unzip.cpp = QuickBackupX\zip\unzip.cpp
+		QuickBackupX\zip\unzip.h = QuickBackupX\zip\unzip.h
+		QuickBackupX\zip\zip.cpp = QuickBackupX\zip\zip.cpp
+		QuickBackupX\zip\zip.h = QuickBackupX\zip\zip.h
+		QuickBackupX\zip\ZipDefine.h = QuickBackupX\zip\ZipDefine.h
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QBX-EXE", "QBX-EXE\QBX-EXE.vcxproj", "{B1D53179-369B-4F04-902D-7CA7B21040FE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3888F848-AD98-46F2-8BC0-B90324FBB067}.Debug|x64.ActiveCfg = Debug|x64
+		{3888F848-AD98-46F2-8BC0-B90324FBB067}.Debug|x64.Build.0 = Debug|x64
+		{3888F848-AD98-46F2-8BC0-B90324FBB067}.Debug|x86.ActiveCfg = Debug|Win32
+		{3888F848-AD98-46F2-8BC0-B90324FBB067}.Debug|x86.Build.0 = Debug|Win32
+		{3888F848-AD98-46F2-8BC0-B90324FBB067}.Release|x64.ActiveCfg = Release|x64
+		{3888F848-AD98-46F2-8BC0-B90324FBB067}.Release|x64.Build.0 = Release|x64
+		{3888F848-AD98-46F2-8BC0-B90324FBB067}.Release|x86.ActiveCfg = Release|Win32
+		{3888F848-AD98-46F2-8BC0-B90324FBB067}.Release|x86.Build.0 = Release|Win32
+		{B1D53179-369B-4F04-902D-7CA7B21040FE}.Debug|x64.ActiveCfg = Debug|x64
+		{B1D53179-369B-4F04-902D-7CA7B21040FE}.Debug|x64.Build.0 = Debug|x64
+		{B1D53179-369B-4F04-902D-7CA7B21040FE}.Debug|x86.ActiveCfg = Debug|Win32
+		{B1D53179-369B-4F04-902D-7CA7B21040FE}.Debug|x86.Build.0 = Debug|Win32
+		{B1D53179-369B-4F04-902D-7CA7B21040FE}.Release|x64.ActiveCfg = Release|x64
+		{B1D53179-369B-4F04-902D-7CA7B21040FE}.Release|x64.Build.0 = Release|x64
+		{B1D53179-369B-4F04-902D-7CA7B21040FE}.Release|x86.ActiveCfg = Release|Win32
+		{B1D53179-369B-4F04-902D-7CA7B21040FE}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{694434D7-2784-42D5-9139-123803694832} = {9A630783-8982-4716-BADC-7BD216C49A4B}
+		{EB3782A2-D4B4-456A-A859-D1EDD9AEDE7A} = {9A630783-8982-4716-BADC-7BD216C49A4B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D9E7DE0C-C995-4CDA-8D7E-D017C0BF683A}
+	EndGlobalSection
+EndGlobal
