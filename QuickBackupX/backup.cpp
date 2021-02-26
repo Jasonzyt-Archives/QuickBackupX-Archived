@@ -96,6 +96,7 @@ namespace QuickBackupX
 			return false;
 		}
 		PR(u8"创建备份...");
+		runcmd("save hold");
 		sendText("all", string("§b[QuickBackupX] 开始创建备份: ") + this->time);
 		ULARGE_INTEGER bavfree;
 		ULARGE_INTEGER btotal;
@@ -276,7 +277,6 @@ namespace QuickBackupX
 			L_ERROR(string("解压失败: ([") + to_string(res) + "]" + ZipRetCheck(res) + ")");
 			PR(u8"解压失败~ ([" << res << "]" << ZipRetCheck(res) << ")");
 		}
-		
 	}
 
 	bool Backup::CheckBackupPermission()
@@ -343,7 +343,7 @@ namespace QuickBackupX
 	ZRESULT Backup::Create()
 	{
 		int i;
-		string bpath = getCustomTime(cfg->bop.c_str());
+		string bpath = to_UTF8(getCustomTime(cfg->bop.c_str()));
 		this->CopyLevelToTempDir();
 		this->IterTempDir();
 		size_t flsize = this->flist.size();

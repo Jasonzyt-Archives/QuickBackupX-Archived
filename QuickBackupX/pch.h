@@ -41,7 +41,7 @@ namespace QuickBackupX
 	extern std::map<unsigned, bool> fids;
 	// 常量定义
 	const std::string QBXVERSIONTAG = "Beta";
-	const std::string QBXVERSION    = "4.1.1";
+	const std::string QBXVERSION    = "4.1.2";
 	const std::string TEMPDIR       = "./QuickBackupX/LEVEL_TEMP/";
 	const std::string RESUMEDIR     = "./QuickBackupX/RESUME_TEMP/";
 	const std::string EULAFILE      = "./QuickBackupX/EULA.txt";

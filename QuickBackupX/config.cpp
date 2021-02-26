@@ -74,16 +74,11 @@ namespace QuickBackupX
 	}
 	string Config::getBackupDir()
 	{
+		string dir;
 		size_t pos = this->bop.find_last_of("/");
 		if (pos == string::npos) pos = this->bop.find_last_of("\\");
-		if (pos == string::npos)
-		{
-			PRERR(u8"BackupOutputPath值有误!其中无\"/\"或\"\\\"号");
-			L_ERROR("BackupOutputPath值有误!其中无\"/\"或\"\\\"号");
-			Sleep(3000);
-			throw 109;
-		}
-		string dir = this->bop.substr(0, pos + 1);
+		if (pos == string::npos) dir = "./";
+		else dir = this->bop.substr(0, pos + 1);
 		return filesystem::canonical(filesystem::path(dir)).string();
 	}
 	string Config::getBackupDisk()
@@ -188,20 +183,17 @@ namespace QuickBackupX
 		example[0]["Name"] = "Steve";
 		example[1]["Name"] = "Alex";
 		example[1]["Xuid"] = "1145141919810";
-		if (!root.isMember("Debug")            || !root["Debug"]           .isBool())   root["Debug"] = true;
-		if (!root.isMember("Allow_CB")         || !root["Debug"]           .isBool())   root["Allow_CB"] = false;
+		if (!root.isMember("Debug")            || !root["Debug"]           .isBool()  ) root["Debug"] = true;
+		if (!root.isMember("Allow_CB")         || !root["Debug"]           .isBool()  ) root["Allow_CB"] = false;
 		if (!root.isMember("BackupOutputPath") || !root["BackupOutputPath"].isString()) root["BackupOutputPath"] = "./backup/%Y-%m-%d-%H-%M.zip";
-		if (!root.isMember("EULA")             || !root["EULA"]            .isBool())   root["EULA"] = false;
-		if (!root.isMember("Admin_Player")     || !root["Admin_Player"]    .isArray())  root["Admin_Player"] = example;
-		if (!root.isMember("Backup_Player")    || !root["Backup_Player"]   .isArray())  root["Backup_Player"] = example;
-		if (!root.isMember("Back_Player")      || !root["Back_Player"]     .isArray())  root["Back_Player"] = example;
+		if (!root.isMember("EULA")             || !root["EULA"]            .isBool()  ) root["EULA"] = false;
+		if (!root.isMember("ListOutputSize")   || !root["ListOutputSize"]  .isInt()   ) root["ListOutputSize"] = 10;
+		if (!root.isMember("ListOutputCont")   || !root["ListOutputCont"]  .isString()) root["ListOutputCont"] = u8"备份[%onum%] %date% %time% %size%";
+		if (!root.isMember("ViewOutputCont")   || !root["ViewOutputCont"]  .isString()) root["ViewOutputCont"] = u8"备份[%onum%] %date% %time% %size% %exer%";
+		if (!root.isMember("Admin_Player")     || !root["Admin_Player"]    .isArray() ) root["Admin_Player"] = example;
+		if (!root.isMember("Backup_Player")    || !root["Backup_Player"]   .isArray() ) root["Backup_Player"] = example;
+		if (!root.isMember("Back_Player")      || !root["Back_Player"]     .isArray() ) root["Back_Player"] = example;
 		SWriteIntoFile(root, CONFIGFILE);
-		if (root.empty() || !root.isObject())
-		{
-			L_ERROR("配置为空或配置不是对象类型");
-			throw 110;
-			return false;
-		}
 		if (!root["EULA"].asBool())
 		{
 			PRERR(u8"您未同意EULA,请在" << CONFIGFILE << u8"中将\"EULA\": false改为\"EULA\": true,进程即将结束");
@@ -212,13 +204,19 @@ namespace QuickBackupX
 		this->acb = root["Allow_CB"].asBool();
 		this->bop = root["BackupOutputPath"].asString();
 		this->eula = root["EULA"].asBool();
+		this->lops = root["ListOutputSize"].asInt();
+		this->los = root["ListOutputCont"].asString();
+		this->vos = root["ViewOutputCont"].asString();
 		this->getJsonArray(root);
 		Debug{
 			L_INFO("正在读取配置: ");
 			L_INFO(string("- Debug: ") + (this->debug ? "true" : "false"));
 			L_INFO(string("- Allow_CB: ") + (this->acb ? "true" : "false"));
-			L_INFO(string("- BackupOutputPath: ") + this->bop);
 			L_INFO(string("- EULA: ") + (this->eula ? "true" : "false"));
+			L_INFO(string("- BackupOutputPath: ") + this->bop);
+			L_INFO(string("- ListOutputCont: ") + this->los);
+			L_INFO(string("- ViewOutputCont: ") + this->vos);
+			L_INFO(string("- ListOutputSize: ") + to_string(this->lops));
 			L_INFO(string("- Admin_Player(") + to_string(this->admins.size()) + ") ");// + this->cfgjv["Admin_Player"].asString());
 			L_INFO(string("- Backup_Player(") + to_string(this->backup.size()) + ") ");// + this->cfgjv["Backup_Player"].asString());
 			L_INFO(string("- Back_Player(") + to_string(this->back.size()) + ") ");// +this->cfgjv["Back_Player"].asString());

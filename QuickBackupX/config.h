@@ -18,7 +18,10 @@ namespace QuickBackupX
 		bool debug = false;
 		bool acb = false; // Allow Command Block
 		bool eula = false; // Agree EULA
+		int lops = 10;
 		std::string bop = ""; // Backup Output Path
+		std::string los = "";
+		std::string vos = "";
 		std::map<std::string, std::string> admins;
 		//std::map<std::string, std::string> backupc; // Can Backup to Cloud Player Vector
 		std::map<std::string, std::string> backup; // Can Backup Player Vector

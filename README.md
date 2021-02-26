@@ -22,6 +22,9 @@
 - [OpenSSL](https://github.com/openssl/openssl) Apache-2.0
 - [BDX SDK]()
 
+## 注意!
+- 本插件所需要的目录都不要包含特殊字符
+
 ## 安装方法
 1. 从[Release](https://github.com/Jasonzyt/QuickBackupX/releases)下载插件文件(.dll)
 2. 将插件放入注入器的插件文件夹 BDX`[BDS路径]/bdxmod/` BDXCore`[BDS路径]/bdxcore_mod/` LiteLoader`[BDS路径]/plugins/`
@@ -51,7 +54,10 @@
 ### 配置文件
 `[BDS路径]/QuickBackupX/config.json`    
 - Allow_CB: 布尔值 是否允许命令方块执行QB命令(出于安全和实用考虑,目前仅支持Make)
-- BackupOutoutPath: 字符串 备份输出目录及[文件名格式](#文件名格式)
+- BackupOutoutPath: 字符串(不含空格) 备份输出目录及[文件名格式](#文件名格式)
+- ListOutputSize: 整型 List备份列表每页输出备份的数量(若填写值小于等于0,则不分页)
+- ListOutputCont: 字符串 ???
+- ViewOutputCont: 字符串 ???
 - Debug: 布尔值 是否输出调试信息
 - EULA: 布尔值 是否同意[EULA](EULA.txt)(不同意将无法启动服务端)
 - Admin_Player: 数组 拥有Admin权限的玩家
@@ -122,4 +128,20 @@
    "Debug" : true,
    "EULA" : true
 }
+```
+
+### 输出格式说明
+```
+// 此内容目前还未实现!!!
+%onum%  备份序号
+%date%  备份日期
+%time%  备份时间
+%sizeb% 备份存档大小(单位:Byte)
+%size%  备份存档大小
+%path%  备份存档路径
+%exer%  备份执行者
+%exert% 备份执行者类型
+%rmd5%  备份时的文件MD5值
+%nmd5%  当前的文件MD5值
+%md5ok% %rmd5和nmd5%是否匹配
 ```

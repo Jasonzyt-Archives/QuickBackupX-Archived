@@ -55,7 +55,21 @@ namespace QuickBackupX
   \__\_\\____|_|\___|_|\_\____/ \__,_|\___|_|\_\\____| .__/_/\_\
                                                      |_|        
 )" << endl;
-
+		if (!filesystem::exists("./QuickBackupX/"))
+		{
+			if (filesystem::create_directory(filesystem::path("./QuickBackupX/")))
+			{
+				PR(u8"创建QuickBackupX文件夹成功!");
+				L_INFO("创建QuickBackupX文件夹成功!");
+			}
+			else
+			{
+				PRERR(u8"创建QuickBackupX文件夹失败!");
+				PRERR(u8"进程即将退出");
+				Sleep(3000);
+				throw 100;
+			}
+		}
 		log->Open();
 		log->Start();
 		cfg->getConfig();
@@ -92,40 +106,6 @@ Copyright (C)2020-2021 JasonZYT
   2.9 破解、二次创作本插件所造成的一切后果由破解者、二次创作者承担。
 )";
 		eula.close();
-		if (!filesystem::exists("./QuickBackupX/"))
-		{
-			if (filesystem::create_directory(filesystem::path("./QuickBackupX/")))
-			{
-				PR(u8"创建QuickBackupX文件夹成功!");
-				L_INFO("创建QuickBackupX文件夹成功!");
-			}
-			else
-			{
-				PRERR(u8"创建QuickBackupX文件夹失败!");
-				PRERR(u8"进程即将退出");
-				Sleep(3000);
-				throw 100;
-			}
-		}
-		if (!filesystem::exists(CONFIGFILE))
-		{
-			Json::Value root;
-			Json::Reader reader;
-			Json::StyledWriter sw;
-			reader.parse(cfgexample, root);
-			ofstream cfgf;
-			cfgf.open(CONFIGFILE, ios::app | ios::out);
-			if (!cfgf.is_open())
-			{
-				PRERR(u8"无法创建文件: " << CONFIGFILE << u8" 请尝试手动创建");
-				L_ERROR(string("无法创建文件: ") + CONFIGFILE);
-				Sleep(3000);
-				throw 102;
-				return;
-			}
-			cfgf << sw.write(root);
-			cfgf.close();
-		}
 		if (!filesystem::exists(BACKUPRECFILE))
 		{
 			PR(u8"未找到备份记录Json: " << BACKUPRECFILE);
@@ -225,7 +205,7 @@ Copyright (C)2020-2021 JasonZYT
 				if (paramsize == 2) rv.type = QBCMDT::Make;
 				else
 				{
-					If_Console{ PRERR(u8"意外的 " << params[2] << " 出现在 " << cmd); }
+					If_Console{ PRERR(u8"意外的 " << params[2] << u8" 出现在 " << cmd); }
 					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[2] + " 出现在 " + cmd); }
 					L_ERROR(string("- 意外的 ") + params[2] + " 出现在 " + cmd);
 					rv.type = QBCMDT::ERRPAR2;
@@ -236,7 +216,7 @@ Copyright (C)2020-2021 JasonZYT
 				if (paramsize == 2) rv.type = QBCMDT::List;
 				else if (paramsize > 3)
 				{
-					If_Console{ PRERR(u8"意外的 " << params[4] << " 出现在 " << cmd); }
+					If_Console{ PRERR(u8"意外的 " << params[4] << u8" 出现在 " << cmd); }
 					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[4] + " 出现在 " + cmd); }
 					L_ERROR(string("- 意外的 ") + params[4] + " 出现在 " + cmd);
 					rv.type = QBCMDT::ERRPAR3;
@@ -269,7 +249,7 @@ Copyright (C)2020-2021 JasonZYT
 				}
 				else
 				{
-					If_Console{ PRERR(u8"意外的 " << params[4] << " 出现在 " << cmd); }
+					If_Console{ PRERR(u8"意外的 " << params[4] << u8" 出现在 " << cmd); }
 					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[4] + " 出现在 " + cmd); }
 					L_ERROR(string("- 意外的 ") + params[4] + " 出现在 " + cmd);
 					rv.type = QBCMDT::ERRPAR3;
@@ -280,7 +260,7 @@ Copyright (C)2020-2021 JasonZYT
 				if (paramsize == 2) rv.type = QBCMDT::Reload;
 				else
 				{
-					If_Console{ PRERR(u8"意外的 " << params[2] << " 出现在 " << cmd); }
+					If_Console{ PRERR(u8"意外的 " << params[2] << u8" 出现在 " << cmd); }
 					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[2] + " 出现在 " + cmd); }
 					L_ERROR(string("- 意外的 ") + params[2] + " 出现在 " + cmd);
 					rv.type = QBCMDT::ERRPAR2;
@@ -291,7 +271,7 @@ Copyright (C)2020-2021 JasonZYT
 				if (paramsize == 2) rv.type = QBCMDT::Help;
 				else
 				{
-					If_Console{ PRERR(u8"意外的 " << params[2] << " 出现在 " << cmd); }
+					If_Console{ PRERR(u8"意外的 " << params[2] << u8" 出现在 " << cmd); }
 					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[2] + " 出现在 " + cmd); }
 					L_ERROR(string("- 意外的 ") + params[2] + " 出现在 " + cmd);
 					rv.type = QBCMDT::ERRPAR2;
@@ -362,7 +342,7 @@ Copyright (C)2020-2021 JasonZYT
 				}
 				else
 				{
-					If_Console{ PRERR(u8"意外的 " << params[6] << " 出现在 " << cmd); }
+					If_Console{ PRERR(u8"意外的 " << params[6] << u8" 出现在 " << cmd); }
 					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[6] + " 出现在 " + cmd); }
 					L_ERROR(string("- 意外的 ") + params[6] + " 出现在 " + cmd);
 					rv.type = QBCMDT::ERRPAR6;
@@ -405,31 +385,30 @@ Copyright (C)2020-2021 JasonZYT
 			{
 				int page;
 				if (qcmd.params.size() == 2) page = 1;
-				else
-				{
-					if (qcmd.ParamType(2) == QBCMDParam::_int)
-					{
-						PRERR(u8"参数 [page: int](页码) 不合法,请重试!");
-						L_ERROR("- 参数 [page: int](页码) 不合法！");
-						L_ERROR("- 执行失败!");
-						return false;
-					}
-					page = atoi(qcmd.params[2].c_str());
-				}
+				else page = atoi(qcmd.params[2].c_str());
 				int pag = 1;
 				if (page > 0) pag = page;
 				// List Main
 				vector<Backup*> baklist = rec->blist;
-				double v1 = (baklist.size() / static_cast<double>(30));
-				int page_quan = ceil(v1);
+				if (cfg->lops <= 0)
+				{
+					for (int iter = 0; iter <= baklist.size() - 1 ; iter++)
+					{
+						cout << u8"- 备份[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
+					}
+					return false;
+				}
+				int lpages = cfg->lops;
+				double v1 = (baklist.size() / static_cast<double>(lpages));
+				int page_quan = v1 + 0.99999999;
 				if (pag > page_quan) pag = page_quan;
 				if (page_quan == 0)
 				{
 					PRWARN(u8"无备份!!! 输入 \"qb make\" 创建一个备份");
 					return false;
 				}
-				int startline = 30 * (pag - 1);
-				int endline = 30 * pag - 1;
+				int startline = lpages * (pag - 1);
+				int endline = lpages * pag - 1;
 				cout << u8"========================= 备份列表 第 " << pag << "/" << page_quan << u8" 页 共 " << baklist.size() << u8" 个备份 =========================" << endl;
 				for (int iter = startline; iter <= endline && iter <= baklist.size() - 1; iter++)
 				{
@@ -443,15 +422,13 @@ Copyright (C)2020-2021 JasonZYT
 				{
 					PRWARN(u8"您正在执行删除全部备份!");
 				}
-				regex reg("^([0-9]+)$");
-				if (!regex_match(qcmd.params[2], reg))
+				int onum = atoi(qcmd.params[2].c_str());
+				if (onum >= rec->blist.size())
 				{
-					PRERR(u8"参数 [onum: int](备份序号) 不合法,请重试!");
-					L_ERROR("- 参数 [onum: int](备份序号) 不合法！");
+					PRERR(u8"找不到备份[" << onum << "]!发送\"qb list\"查看当前的备份");
 					L_ERROR("- 执行失败!");
 					return false;
 				}
-				int onum = atoi(qcmd.params[2].c_str());
 				Backup::Executor exer;
 				exer.type = Console_Type;
 				rec->blist[(onum - 1)]->Delete(exer);
@@ -469,12 +446,9 @@ Copyright (C)2020-2021 JasonZYT
 					L_INFO("配置重载失败!");
 				}
 			}
-			else
+			else if (qcmd.type == QBCMDT::Back)
 			{
-				PRERR(u8"参数不合法!");
-				L_ERROR("- 参数不合法！");
-				L_ERROR("- 执行失败!");
-				return false;
+				
 			}
 			return false;
 		}
