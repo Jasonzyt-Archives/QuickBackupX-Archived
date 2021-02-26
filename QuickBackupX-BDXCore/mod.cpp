@@ -123,6 +123,20 @@ Copyright (C)2020-2021 JasonZYT
 			fp << "[]" << endl;
 			fp.close();
 		}
+		if (!filesystem::exists(cfg->getBackupDir()))
+		{
+			if (filesystem::create_directory(filesystem::path(cfg->getBackupDir())))
+			{
+				L_INFO(string("创建 ") + cfg->getBackupDir() + " 文件夹成功!");
+			}
+			else
+			{
+				PRERR(u8"创建 " << cfg->getBackupDir() << " 文件夹失败! 请尝试手动创建");
+				L_INFO(string("创建 ") + cfg->getBackupDir() + " 文件夹失败!!!");
+				Sleep(3000);
+				throw 100;
+			}
+		}
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 		PR(u8"感谢 TISUnion(https://www.github.com/TISUnion/QuickBackupM) 的灵感支持");
 		PR(u8"感谢 ZipUtils库(https://www.codeproject.com/Articles/7530/Zip-Utils-Clean-Elegant-Simple-Cplusplus-Win) 的代码支持");

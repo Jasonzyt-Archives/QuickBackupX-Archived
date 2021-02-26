@@ -32,6 +32,7 @@ namespace QuickBackupX
 		bool EditPermissionName(PerType per, std::string xuid, std::string name);
 		bool PlayerIsAdmin(std::string name, std::string xuid);
 		std::string getBackupDir();
+		std::string getBackupDirC();
 		std::string getBackupDisk();
 	private:
 		Json::Value cfgjv;

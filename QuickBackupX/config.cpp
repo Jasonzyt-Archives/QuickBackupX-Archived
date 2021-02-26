@@ -79,11 +79,15 @@ namespace QuickBackupX
 		if (pos == string::npos) pos = this->bop.find_last_of("\\");
 		if (pos == string::npos) dir = "./";
 		else dir = this->bop.substr(0, pos + 1);
-		return filesystem::canonical(filesystem::path(dir)).string();
+		return dir;
+	}
+	string Config::getBackupDirC()
+	{
+		return filesystem::canonical(filesystem::path(this->getBackupDir())).string();
 	}
 	string Config::getBackupDisk()
 	{
-		string bdir = this->getBackupDir();
+		string bdir = this->getBackupDirC();
 		return bdir.substr(0, 3);
 	}
 
