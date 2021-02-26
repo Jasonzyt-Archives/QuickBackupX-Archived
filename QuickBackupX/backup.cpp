@@ -170,7 +170,7 @@ namespace QuickBackupX
 			sendText("all", string("- §a此次备份的执行者: ") + this->exer.to_string());
 			sendText("all", string("- §3此次备份的压缩率: ") + compr + " (原存档大小:" + SizeToString(lsize) + ")");
 			sendText("all", string("- §b备份后的") + disk[0] + "盘状态: " + "已用 " + to_string(diskus) + "GB, 可用 " + to_string(to_GB(avfree)) + "GB, 使用率: " + to_string(diskur) + "%");
-			sendText("all", string("§5当前共有 ") + to_string(quan) + " 个备份 发送\"qb list\"以获得更多备份信息");
+			sendText("all", string("§5当前共有 ") + to_string(quan) + " 个备份 发送\\\"qb list\\\"以获得更多备份信息");
 			return true;
 		}
 		else

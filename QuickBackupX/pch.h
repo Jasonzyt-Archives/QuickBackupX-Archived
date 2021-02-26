@@ -34,13 +34,14 @@ namespace QuickBackupX
 	extern Config* cfg;
 	extern Logger* log;
 	extern VA pxuid_level;
+	extern int OnlineQuan;
 	extern std::map<Player*, bool> PlayerOnline;
 	extern std::map<std::string, Player*> PlayerUuid;
 	extern std::map<std::string, bool> PlayerIsOnline;
 	extern std::map<unsigned, bool> fids;
 	// 常量定义
 	const std::string QBXVERSIONTAG = "Beta";
-	const std::string QBXVERSION    = "4.1.0";
+	const std::string QBXVERSION    = "4.1.1";
 	const std::string TEMPDIR       = "./QuickBackupX/LEVEL_TEMP/";
 	const std::string RESUMEDIR     = "./QuickBackupX/RESUME_TEMP/";
 	const std::string EULAFILE      = "./QuickBackupX/EULA.txt";

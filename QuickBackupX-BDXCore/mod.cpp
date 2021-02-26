@@ -31,6 +31,7 @@ namespace QuickBackupX
 	map<string, Player*> PlayerUuid;
 	map<string, bool> PlayerIsOnline;
 	map<unsigned, bool> fids;
+	int OnlineQuan = 0;
 
 	Logger* log = new Logger;
 	Config* cfg = new Config;
@@ -614,6 +615,7 @@ Copyright (C)2020-2021 JasonZYT
 
 	SYMHOOK(onPlayerJoined, VA, "?onPlayerJoined@ServerScoreboard@@UEAAXAEBVPlayer@@@Z", VA a1, Player* p)
 	{
+		OnlineQuan++;
 		PlayerOnline[p] = true;
 		PlayerIsOnline[p->getNameTag()] = true;
 		PlayerUuid[p->getUuid()->toString()] = p;
@@ -622,6 +624,7 @@ Copyright (C)2020-2021 JasonZYT
 	
 	SYMHOOK(onPlayerLeft, void, "?_onPlayerLeft@ServerNetworkHandler@@AEAAXPEAVServerPlayer@@_N@Z", VA _this, Player* p, char v3)
 	{
+		OnlineQuan--;
 		PlayerOnline[p] = false;
 		PlayerIsOnline[p->getNameTag()] = false;
 		PlayerUuid.erase(p->getUuid()->toString());

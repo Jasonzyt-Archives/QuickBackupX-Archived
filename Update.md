@@ -14,23 +14,34 @@
 
 ## v4.1.0 Beta
 支持的注入器: BDX,BDXCore,LiteLoader    
-依赖: Visual C++ Runtime(x86_64)    
-
+依赖: Visual C++ Runtime(x86_64)
+### 新功能
+- 命令解析器
 - 创建备份与列出所有备份
 - Make命令支持命令方块调用
-- 优化Backup::CheckPermission系列函数()
 - 加入新权限等级 Admin_Player
 - 删除备份(玩家只能删除自己创建的备份,Admin可以删除任何人)
 - 备份执行者记录改版(支持CB且内容更加详细)
-- 优化Log内容(将错误和警告的源码详细位置记录清楚)(需开启Debug模式)
-- 优化BRecJson类(减少BRecJson::ListRecord函数调用次数)
 - 若备份失败则不获取相关信息
-- 优化删除备份
 - 若备份所在磁盘剩余空间不足,则取消执行备份(空间<2GB)
 - 备份文件重名自动修改
 - 若备份被手动删除,在启动时就删除该备份的记录
 - 完成插件的EULA
-- 插件文档
 - 若配置缺失或不符合类型要求,则自动补齐(修改)相关配置
+### 优化
+- 优化Backup::CheckPermission系列函数()
+- 优化Log内容(将错误和警告的源码详细位置记录清楚)(需开启Debug模式)
+- 优化BRecJson类(减少BRecJson::ListRecord函数调用次数)
+- 优化删除备份
 
-## v4.1.1 Beta [Coming soon]
+## v4.1.1 Beta
+支持的注入器: BDX,BDXCore,LiteLoader    
+依赖: Visual C++ Runtime(x86_64)
+### 新功能
+- qb命令记录
+- 优化命令解析器
+- 在服务器没玩家的时候不执行tellraw命令
+### Bug修复
+- 修复控制台命令输出一大堆的bug
+
+## v4.1.2 Beta [Coming soon]

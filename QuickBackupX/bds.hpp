@@ -261,19 +261,14 @@ namespace QuickBackupX
 	}
 	bool sendText(std::string playername, std::string text)
 	{
+		if (OnlineQuan == 0) return false;
 		std::string cmd;
 		if (playername == "all")
-		{
 			cmd = u8"tellraw @a {\"rawtext\":[{\"text\":\"" + to_UTF8(text) + u8"\"}]}";
-			runcmd(cmd);
-			return true;
-		}
 		else
-		{
 			cmd = u8"tellraw " + playername + " {\"rawtext\":[{\"text\":\"" + to_UTF8(text) + u8"\"}]}";
-			runcmd(cmd);
-			return true;
-		}
+		runcmd(cmd);
+		return true;
 	}
 #pragma endregion
 
