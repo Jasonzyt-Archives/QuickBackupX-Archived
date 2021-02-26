@@ -5,7 +5,6 @@
 #include "pch.h"
 #include "md5.h"
 #include "json/json.h"
-#include <time.h>
 
 namespace QuickBackupX
 {

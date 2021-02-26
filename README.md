@@ -63,6 +63,7 @@
 - Admin_Player: 数组 拥有Admin权限的玩家
 - Backup_Player: 数组 可以执行备份的玩家
 - Back_Player: 数组 可以执行回档的玩家
+- AutoBackup_Time: 数组 执行自动备份的时间: 格式:`Hour:Minute 例 04:00`
 ### 备份记录文件
 `[BDS路径]/QuickBackupX/backups.json`   
 - 此文件中的内容若受到破坏,插件将无法获取到备份的信息
@@ -114,6 +115,7 @@
 {
    "Admin_Player" : [],
    "Allow_CB" : false,
+   "AutoBackup_Time" : [ "04:00", "23:33" ],
    "Back_Player" : [],
    "BackupOutputPath" : "./backup/%Y-%m-%d-%H-%M.zip",
    "Backup_Player" : [
@@ -126,7 +128,10 @@
       }
    ],
    "Debug" : true,
-   "EULA" : true
+   "EULA" : true,
+   "ListOutputCont" : "\u5907\u4efd[%onum%] %date% %time% %size%",
+   "ListOutputSize" : 10,
+   "ViewOutputCont" : "\u5907\u4efd[%onum%] %date% %time% %size% %exer%"
 }
 ```
 

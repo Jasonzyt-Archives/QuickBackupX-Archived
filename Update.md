@@ -61,4 +61,14 @@
 - 修复了插件文件夹创建太晚的bug
 - 修复命令错误输出乱码的bug
 
-## v4.1.3 Beta [Coming soon]
+## 4.1.3 Beta
+支持的注入器: BDX,BDXCore,LiteLoader    
+依赖: Visual C++ Runtime(x86_64)
+### 新功能
+- 加入新执行者类型:AutoBackup
+- 现在支持自动备份了
+- 现在如果不填写"Backup_Player"或"Back_Player",则表示所有玩家均可执行备份和回档
+### 修复
+- 修复了save hold命令执行时总比备份执行晚的bug(并不是最优解决方案 欢迎PR)
+
+## v4.1.4 Beta [Coming soon]

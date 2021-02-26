@@ -41,6 +41,7 @@
     <ClCompile Include="..\QuickBackupX\json\json_reader.cpp">
       <Filter>QBX\JsonCPP</Filter>
     </ClCompile>
+    <ClCompile Include="..\QuickBackupX\autobackup.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="QBX">

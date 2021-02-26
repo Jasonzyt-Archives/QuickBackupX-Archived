@@ -244,7 +244,6 @@ namespace QuickBackupX
 #pragma endregion
 
 #pragma region Command
-	static VA p_spscqueue;
 	struct CommandRequestPacket {
 		char filler[0x90];
 		// È¡ÃüÁîÎÄ±¾

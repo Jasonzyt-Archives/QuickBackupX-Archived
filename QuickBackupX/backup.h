@@ -7,7 +7,6 @@
 #include "json/json.h"
 #include "zip/zip.h"
 #include "zip/unzip.h"
-#include <filesystem>
 
 #define Console_Type QuickBackupX::Backup::Executor::Type::Console
 #define Player_Type  QuickBackupX::Backup::Executor::Type::Player
@@ -24,7 +23,7 @@ namespace QuickBackupX
 		public:
 			enum class Type : int
 			{
-				Unknown, Console, Player, Block
+				Unknown, Console, Player, Block, AutoBackup
 			};
 			enum class CBMode : int
 			{

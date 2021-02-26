@@ -15,7 +15,7 @@
 #include "backup.h"
 #include "json/json.h"
 #include "bds.hpp"
-#include <regex>
+#include "autobackup.h"
 #include <shellapi.h>
 #pragma warning(disable:4996)
 
@@ -26,7 +26,7 @@ using namespace std;
 
 namespace QuickBackupX
 {
-	VA pxuid_level;
+	VA pxuid_level, p_spscqueue;
 	map<Player*, bool> PlayerOnline;
 	map<string, Player*> PlayerUuid;
 	map<string, bool> PlayerIsOnline;
@@ -195,6 +195,16 @@ Copyright (C)2020-2021 JasonZYT
 			return QBCMDParam::string;
 		}
 	};
+
+	void RunAutoBackup()
+	{
+		AutoBackup* ab = new AutoBackup;
+		while (true)
+		{
+			ab->Run(); // 每分钟试图执行一次
+			this_thread::sleep_for(chrono::milliseconds(60000));
+		}
+	}
 
 	QBCMD CMDCheck(string cmd, Backup::Executor exer)
 	{
@@ -590,6 +600,9 @@ Copyright (C)2020-2021 JasonZYT
 		string output = string(str);
 		if (output == "MCPE")
 		{
+			L_INFO("AutoBackup线程开始...");
+			thread thab(&RunAutoBackup);
+			thab.detach();
 			//HRESULT res = URLDownloadToFileA(NULL, "plugin.skytown.xyz", "./QuickBackupX/qbx.exe", NULL, NULL);
 		}
 		return original(handle, str, size);

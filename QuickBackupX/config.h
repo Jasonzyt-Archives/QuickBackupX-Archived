@@ -22,10 +22,9 @@ namespace QuickBackupX
 		std::string bop = ""; // Backup Output Path
 		std::string los = "";
 		std::string vos = "";
+		std::vector<std::string> abtime;
 		std::map<std::string, std::string> admins;
-		//std::map<std::string, std::string> backupc; // Can Backup to Cloud Player Vector
 		std::map<std::string, std::string> backup; // Can Backup Player Vector
-		//std::map<std::string, std::string> backc; // Can Back form Cloud Player Vector
 		std::map<std::string, std::string> back; // Can Back Player Vector
 		bool getConfig();
 		bool AddConfig();
@@ -38,8 +37,6 @@ namespace QuickBackupX
 		Json::Value cfgjv;
 		bool getJsonArray(Json::Value root);
 	};
-
-	const std::string cfgexample = R"({"Allow_CB":false,"Debug":true,"BackupOutputPath":"./backup/%Y-%m-%d-%H-%M.zip","EULA":false,"Backup_Player":[{"Name":"Steve","Xuid":"1145141919810"},{"Name":"Alex"}],"Back_Player":[],"Admin_Player":[]})";
 }
 
 #endif // QBX_JSON_INCLUDED

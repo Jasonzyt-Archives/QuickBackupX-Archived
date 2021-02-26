@@ -6,8 +6,6 @@
 #include "zip/ZipDefine.h"
 #include "zip/zip.h"
 #include "zip/unzip.h"
-#include <iostream>
-#include <sstream>
 #pragma warning(disable:4996)
 
 using namespace std;

@@ -18,6 +18,7 @@ namespace QuickBackupX
 		if (type == Console_Type)     return "[Console]";
 		else if (type == Player_Type) return string("[Player]") + pname;
 		else if (type == Block_Type)  return string("[CMDBlock]") + cbpos;
+		else if (type == Backup::Executor::Type::AutoBackup) return "[AutoBackup]";
 		return "[Unknown]";
 	}
 
@@ -36,6 +37,9 @@ namespace QuickBackupX
 			break;
 		case Block_Type:
 			return "Block";
+			break;
+		default:
+			return "AutoBackup";
 			break;
 		}
 	}
@@ -97,6 +101,7 @@ namespace QuickBackupX
 		}
 		PR(u8"创建备份...");
 		runcmd("save hold");
+		this_thread::sleep_for(chrono::milliseconds(2500));
 		sendText("all", string("§b[QuickBackupX] 开始创建备份: ") + this->time);
 		ULARGE_INTEGER bavfree;
 		ULARGE_INTEGER btotal;
@@ -281,9 +286,11 @@ namespace QuickBackupX
 
 	bool Backup::CheckBackupPermission()
 	{
+		if (this->exer.type == Backup::Executor::Type::AutoBackup) return true;
 		if (this->exer.type == Console_Type) return true;
 		if (this->exer.type == Block_Type) return cfg->acb ? true : false;
 		if (Is_Admin(this->exer.pname, this->exer.pxuid)) return true;
+		if (cfg->backup.size() == 0) return true;
 		map<string, string>::iterator iter = cfg->backup.begin();
 		for (; iter != cfg->backup.end(); ++iter)
 		{
@@ -319,6 +326,7 @@ namespace QuickBackupX
 		if (exer.type == Console_Type) return true;
 		if (exer.type == Player_Type)
 		{
+			if (cfg->back.size() == 0) return true;
 			if (Is_Admin(exer.pname, exer.pxuid)) return true;
 			map<string, string>::iterator iter = cfg->back.begin();
 			for (; iter != cfg->back.end(); ++iter)

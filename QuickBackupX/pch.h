@@ -12,9 +12,13 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <vector>
+#include <sstream>
+#include <regex>
 // 其他 API 头文件
 #include <stdio.h>
 #include <urlmon.h>
+#include <time.h>
 #pragma comment(lib, "urlmon.lib")
 
 using VA = unsigned __int64;
@@ -33,7 +37,7 @@ namespace QuickBackupX
 	extern BRecJson* rec;
 	extern Config* cfg;
 	extern Logger* log;
-	extern VA pxuid_level;
+	extern VA pxuid_level, p_spscqueue;
 	extern int OnlineQuan;
 	extern std::map<Player*, bool> PlayerOnline;
 	extern std::map<std::string, Player*> PlayerUuid;
@@ -41,7 +45,7 @@ namespace QuickBackupX
 	extern std::map<unsigned, bool> fids;
 	// 常量定义
 	const std::string QBXVERSIONTAG = "Beta";
-	const std::string QBXVERSION    = "4.1.2";
+	const std::string QBXVERSION    = "4.1.3";
 	const std::string TEMPDIR       = "./QuickBackupX/LEVEL_TEMP/";
 	const std::string RESUMEDIR     = "./QuickBackupX/RESUME_TEMP/";
 	const std::string EULAFILE      = "./QuickBackupX/EULA.txt";

@@ -135,6 +135,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>C:\Users\Administrator\Desktop\QuickBackupX\QuickBackupX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\QuickBackupX\autobackup.cpp" />
     <ClCompile Include="..\QuickBackupX\backup.cpp" />
     <ClCompile Include="..\QuickBackupX\config.cpp" />
     <ClCompile Include="..\QuickBackupX\func.cpp" />

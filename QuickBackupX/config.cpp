@@ -94,6 +94,18 @@ namespace QuickBackupX
 	bool Config::getJsonArray(Json::Value root)
 	{
 		int i = 0;
+		Json::Value abtv = root["AutoBackup_Time"];
+		int abti = abtv.size();
+		if (abti != 0)
+		{
+			i = 0;
+			while (i <= abti - 1)
+			{
+				if (abtv[i].empty()) continue;
+				this->abtime.push_back(abtv[i].asString());
+				i++;
+			}
+		}
 		Json::Value adminv = root["Admin_Player"];
 		int admini = adminv.size();
 		if (admini != 0)
@@ -111,28 +123,10 @@ namespace QuickBackupX
 				i++;
 			}
 		}
-		//Json::Value backupc = root["Cloud_Backup_Player"];
 		Json::Value backup = root["Backup_Player"];
-		//Json::Value backc = root["Cloud_Back_Player"];
 		Json::Value back = root["Back_Player"];
-		//int backupci = backupc.size();
 		int backupi = backup.size();
-		//int backci = backc.size();
 		int backi = back.size();
-		/*if (backupci != 0)
-		{
-			i = 0;
-			while (i <= backupc.size() - 1)
-			{
-				this->backupc.insert(
-					pair<string, string>(
-						backupc[i]["Name"].asString(), 
-						backupc[i]["Xuid"].asString()
-					)
-				);
-				i++;
-			}
-		}*/
 		if (backupi != 0)
 		{
 			i = 0;
@@ -148,20 +142,6 @@ namespace QuickBackupX
 				i++;
 			}
 		}
-		/*if (backci != 0)
-		{
-			i = 0;
-			while (i <= backc.size() - 1)
-			{
-				this->backc.insert(
-					pair<string, string>(
-						backc[i]["Name"].asString(),
-						backc[i]["Xuid"].asString()
-					)
-				);
-				i++;
-			}
-		}*/
 		if (backi != 0)
 		{
 			i = 0;
@@ -197,6 +177,7 @@ namespace QuickBackupX
 		if (!root.isMember("Admin_Player")     || !root["Admin_Player"]    .isArray() ) root["Admin_Player"] = example;
 		if (!root.isMember("Backup_Player")    || !root["Backup_Player"]   .isArray() ) root["Backup_Player"] = example;
 		if (!root.isMember("Back_Player")      || !root["Back_Player"]     .isArray() ) root["Back_Player"] = example;
+		if (!root.isMember("AutoBackup_Time")  || !root["AutoBackup_Time"] .isArray() ) root["AutoBackup_Time"][0] = "Hour:Minute";
 		SWriteIntoFile(root, CONFIGFILE);
 		if (!root["EULA"].asBool())
 		{
@@ -224,6 +205,7 @@ namespace QuickBackupX
 			L_INFO(string("- Admin_Player(") + to_string(this->admins.size()) + ") ");// + this->cfgjv["Admin_Player"].asString());
 			L_INFO(string("- Backup_Player(") + to_string(this->backup.size()) + ") ");// + this->cfgjv["Backup_Player"].asString());
 			L_INFO(string("- Back_Player(") + to_string(this->back.size()) + ") ");// +this->cfgjv["Back_Player"].asString());
+			L_INFO(string("- AutoBackup_Time(") + to_string(this->abtime.size()) + ") ");
 		}
 		L_INFO("配置读取成功!");
 		PR(u8"配置读取成功!");

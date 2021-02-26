@@ -8,6 +8,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickBackup", "QuickBackup", "{9A630783-8982-4716-BADC-7BD216C49A4B}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		QuickBackupX\autobackup.cpp = QuickBackupX\autobackup.cpp
+		QuickBackupX\autobackup.h = QuickBackupX\autobackup.h
 		QuickBackupX\backup.cpp = QuickBackupX\backup.cpp
 		QuickBackupX\backup.h = QuickBackupX\backup.h
 		QuickBackupX\bds.hpp = QuickBackupX\bds.hpp
