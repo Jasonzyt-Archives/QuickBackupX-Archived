@@ -71,4 +71,29 @@
 ### 修复
 - 修复了save hold命令执行时总比备份执行晚的bug(并不是最优解决方案 欢迎PR)
 
-## v4.1.4 Beta [Coming soon]
+## 4.1.4 Alpha
+支持的注入器: BDX,BDXCore,LiteLoader    
+依赖: Visual C++ Runtime(x86_64)
+### 注意
+- 此版本为衔接版本 代码更新幅度相对更大
+- 此版本为ZipUtils向Bundle转换的衔接版本 BUG可能会相对较多
+### 新功能
+- 现在支持玩家执行Make,Del,List
+- 现在支持控制台执行"qb del all"来删除所有的备份了 安全起见,此功能仅控制台可用
+- 现在filesystem错误会被catch并输出而不是直接抛错误了
+- 新增自动备份的开关
+- 新增自动备份的限量
+- 新增配置: Auto_On_AB 在服务端启动时是否自动打开自动备份
+- 新增配置: Compression 压缩等级
+- 新增配置: AB_Max 自动备份的最大数量
+### 修复
+- 修复了几处可能会导致内存泄漏的地方
+- 修复了获取存档文件夹大小不会遍历其子目录的bug
+- 优化了配置模块
+- 优化了AutoBackup时间配置存储: vector<int> => time_t
+### 优化
+- 增加了编译器命令行选项: /utf-8,以改善乱码
+### 已知Bugs
+- `qb auto list`命令会造成服务端崩溃
+
+## v4.1.5 Beta [Coming soon]

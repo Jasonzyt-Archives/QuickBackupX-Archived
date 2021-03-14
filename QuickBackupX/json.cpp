@@ -1,4 +1,4 @@
-// Created by JasonZYT on 2021/02/09
+ï»¿// Created by JasonZYT on 2021/02/09
 #include "json.h"
 
 using namespace std;
@@ -7,7 +7,7 @@ namespace QuickBackupX
 {
 	BRecJson::BRecJson()
 	{
-		//Debug{ L_INFO("±¸·Ý¼ÇÂ¼ BRecJson ¶ÔÏóÒÑ¹¹Ôì"); }
+		//Debug{ L_INFO("å¤‡ä»½è®°å½• BRecJson å¯¹è±¡å·²æž„é€ "); }
 		this->root = getJSON(BACKUPRECFILE);
 		//this->blist = ListRecord();
 	}
@@ -15,7 +15,7 @@ namespace QuickBackupX
 	bool BRecJson::AddRecord(Backup* bak)
 	{
 		this->blist.push_back(bak);
-		Debug{ L_INFO(string("Ð´Èë¼ÇÂ¼ÎÄ¼þ: ") + BACKUPRECFILE + " ..."); }
+		Debug{ L_INFO(string("å†™å…¥è®°å½•æ–‡ä»¶: ") + BACKUPRECFILE + " ..."); }
 		Json::Value in;
 		in["Path"] = bak->path.string();
 		in["MD5"] = bak->md5;
@@ -39,26 +39,21 @@ namespace QuickBackupX
 		in["Time"] = bak->time;
 		this->root.append(in);
 		bool res = SWriteIntoFile(this->root, BACKUPRECFILE);
-		res ? L_INFO("¼ÇÂ¼Ð´Èë³É¹¦!") : log->LogError("¼ÇÂ¼Ð´ÈëÊ§°Ü!!!");
+		res ? L_INFO("è®°å½•å†™å…¥æˆåŠŸ!") : log->LogError("è®°å½•å†™å…¥å¤±è´¥!!!");
 		return res;
-	}
-
-	int BRecJson::getBackupQuantity()
-	{
-		return this->root.size();
 	}
 
 	vector<Backup*> BRecJson::ListRecord()
 	{
-		Debug{ L_INFO("±éÀú±¸·Ý¼ÇÂ¼..."); }
+		Debug{ L_INFO("éåŽ†å¤‡ä»½è®°å½•..."); }
 		int rs = this->root.size();
 		vector<Backup*> bak;
 		for (int i = 0; i <= rs - 1; i++)
 		{
-			Debug{ L_INFO(string("- ÕýÔÚ±éÀú±¸·Ý[") + to_string((i + 1)) + "] " + this->root[i]["Time"].asString()); }
+			Debug{ L_INFO(string("- æ­£åœ¨éåŽ†å¤‡ä»½[") + to_string((i + 1)) + "] " + this->root[i]["Time"].asString()); }
 			if (!filesystem::exists(this->root[i]["Path"].asString()))
 			{
-				Debug{ L_WARNING(string("- Î´ÕÒµ½±¸·Ý[") + to_string((i + 1)) + "]ÎÄ¼þ,É¾³ý¼ÇÂ¼..."); }
+				Debug{ L_WARNING(string("- æœªæ‰¾åˆ°å¤‡ä»½[") + to_string((i + 1)) + "]æ–‡ä»¶,åˆ é™¤è®°å½•..."); }
 				Json::Value jv1;
 				bool jdres = this->root.removeIndex((i - 1), &jv1);
 				SWriteIntoFile(this->root, BACKUPRECFILE);
@@ -91,6 +86,30 @@ namespace QuickBackupX
 		return bak;
 	}
 
+	bool BRecJson::RefrashRecord()
+	{
+		vector<Backup*>::iterator it = this->blist.begin();
+		for (; it != this->blist.end(); it++)
+		{
+			if (!filesystem::exists((*it)->path)) this->DeleteRecord((*it)->onum);
+		}
+		return true;
+	}
+
+	Backup* QuickBackupX::BRecJson::GetOldestRecord(Backup::Executor::Type tp)
+	{
+		vector<Backup*>::iterator it = this->blist.begin();
+		for (; it != this->blist.end(); it++)
+		{
+			if (!filesystem::exists((*it)->path)) this->DeleteRecord((*it)->onum);
+			else
+			{
+				if ((*it)->exer.type == tp) return (*it);
+			}
+		}
+		return NULL;
+	}
+
 	bool BRecJson::DeleteRecord(int num)
 	{
 		vector<Backup*>::iterator it = this->blist.begin() + (num - 1);
@@ -104,5 +123,16 @@ namespace QuickBackupX
 		bool jdres = this->root.removeIndex((num - 1), &jv1);
 		SWriteIntoFile(this->root, BACKUPRECFILE);
 		return jdres;
+	}
+
+	int BRecJson::GetTotal(Backup::Executor::Type tp)
+	{
+		int i = 0;
+		vector<Backup*>::iterator it = this->blist.begin();
+		for (; it != this->blist.end(); it++)
+		{
+			if ((*it)->exer.type == tp) i++;
+		}
+		return i;
 	}
 }

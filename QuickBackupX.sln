@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickBackup", "QuickBackup"
 		QuickBackupX\config.cpp = QuickBackupX\config.cpp
 		QuickBackupX\config.h = QuickBackupX\config.h
 		EULA.txt = EULA.txt
+		QuickBackupX\file.cpp = QuickBackupX\file.cpp
+		QuickBackupX\file.h = QuickBackupX\file.h
 		QuickBackupX\func.cpp = QuickBackupX\func.cpp
 		QuickBackupX\func.h = QuickBackupX\func.h
 		QuickBackupX\json.cpp = QuickBackupX\json.cpp
@@ -28,6 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickBackup", "QuickBackup"
 		QuickBackupX\pch.h = QuickBackupX\pch.h
 		QuickBackupX\properties.cpp = QuickBackupX\properties.cpp
 		QuickBackupX\properties.h = QuickBackupX\properties.h
+		QuickBackupX\qbzip.cpp = QuickBackupX\qbzip.cpp
+		QuickBackupX\qbzip.h = QuickBackupX\qbzip.h
 		README.md = README.md
 		TODO.md = TODO.md
 		Update.md = Update.md
@@ -52,16 +56,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JsonCPP", "JsonCPP", "{6944
 		QuickBackupX\json\writer.h = QuickBackupX\json\writer.h
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ZipUtils", "ZipUtils", "{EB3782A2-D4B4-456A-A859-D1EDD9AEDE7A}"
-	ProjectSection(SolutionItems) = preProject
-		QuickBackupX\zip\unzip.cpp = QuickBackupX\zip\unzip.cpp
-		QuickBackupX\zip\unzip.h = QuickBackupX\zip\unzip.h
-		QuickBackupX\zip\zip.cpp = QuickBackupX\zip\zip.cpp
-		QuickBackupX\zip\zip.h = QuickBackupX\zip\zip.h
-		QuickBackupX\zip\ZipDefine.h = QuickBackupX\zip\ZipDefine.h
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QBX-EXE", "QBX-EXE\QBX-EXE.vcxproj", "{B1D53179-369B-4F04-902D-7CA7B21040FE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bundle", "Bundle", "{31857931-B9A1-42BE-B458-D11133E64A33}"
+	ProjectSection(SolutionItems) = preProject
+		QuickBackupX\bundle\bundle.cpp = QuickBackupX\bundle\bundle.cpp
+		QuickBackupX\bundle\bundle.h = QuickBackupX\bundle\bundle.h
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,7 +94,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{694434D7-2784-42D5-9139-123803694832} = {9A630783-8982-4716-BADC-7BD216C49A4B}
-		{EB3782A2-D4B4-456A-A859-D1EDD9AEDE7A} = {9A630783-8982-4716-BADC-7BD216C49A4B}
+		{31857931-B9A1-42BE-B458-D11133E64A33} = {9A630783-8982-4716-BADC-7BD216C49A4B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D9E7DE0C-C995-4CDA-8D7E-D017C0BF683A}

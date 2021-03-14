@@ -1,4 +1,4 @@
-// Created by JasonZYT on 2021/02/07
+ï»¿// Created by JasonZYT on 2021/02/07
 #include "backup.h"
 #include "config.h"
 #include "logger.h"
@@ -49,22 +49,22 @@ namespace QuickBackupX
 		string rv;
 		if (type != Block_Type)
 		{
-			L_ERROR("²»ÊÇBlockÀàĞÍ!!!");
+			L_ERROR("ä¸æ˜¯Blockç±»å‹!!!");
 			throw 104;
 		}
 		if (cbpos == "")
 		{
-			L_ERROR("cbposÎª¿Õ!!!");
+			L_ERROR("cbposä¸ºç©º!!!");
 			throw 105;
 		}
 		vector<string> pos = split(cbpos, ':');
 		if (pos.size() != 2) throw 106;
-		string dim = "Î´ÖªÎ¬¶È";
+		string dim = "æœªçŸ¥ç»´åº¦";
 		switch (atoi(pos[0].c_str()))
 		{
-		case 0: dim = "Ö÷ÊÀ½ç"; break;
-		case 1: dim = "ÏÂ½ç"; break;
-		case 2: dim = "Ä©µØ"; break;
+		case 0: dim = "ä¸»ä¸–ç•Œ"; break;
+		case 1: dim = "ä¸‹ç•Œ"; break;
+		case 2: dim = "æœ«åœ°"; break;
 		}
 		rv = dim + ":" + pos[1];
 		return rv;
@@ -81,57 +81,58 @@ namespace QuickBackupX
 	{
 		this->exer = exer;
 		this->time = getTime();
+		Directory leveld(this->lpath);
 		string bdisk = cfg->getBackupDisk();
-		size_t lsize = this->getLevelSize();
+		size_t lsize = leveld.dirsize();
 		if (!this->CheckBackupPermission())
 		{
 			if (this->exer.type == Player_Type)
 			{
-				PRWARN(u8"Íæ¼Ò " << this->exer.pname << u8" ÊÔÍ¼Ö´ĞĞ±¸·İ,µ«ÒòÎŞÈ¨ÏŞ±»À¹½ØÁË");
-				L_WARNING(string("Íæ¼Ò ") + this->exer.pname + "ÊÔÍ¼Ö´ĞĞ±¸·İ(ÎŞÈ¨ÏŞ)");
-				TellAdmin(string("Íæ¼Ò ") + this->exer.pname + "(ÎŞÈ¨ÏŞ) ÊÔÍ¼Ö´ĞĞ±¸·İ");
-				sendText(this->exer.pname, "¡ìcÄúÃ»ÓĞÈ¨ÏŞÖ´ĞĞ´Ë²Ù×÷!!!");
+				PRWARN(u8"ç©å®¶ " << this->exer.pname << u8" è¯•å›¾æ‰§è¡Œå¤‡ä»½,ä½†å› æ— æƒé™è¢«æ‹¦æˆªäº†");
+				L_WARNING(string("ç©å®¶ ") + this->exer.pname + "è¯•å›¾æ‰§è¡Œå¤‡ä»½(æ— æƒé™)");
+				TellAdmin(string("ç©å®¶ ") + this->exer.pname + "(æ— æƒé™) è¯•å›¾æ‰§è¡Œå¤‡ä»½");
+				sendText(this->exer.pname, "Â§cæ‚¨æ²¡æœ‰æƒé™æ‰§è¡Œæ­¤æ“ä½œ!!!");
 			}
 			else if (this->exer.type == Block_Type)
 			{
-				PRWARN(u8"ÃüÁî·½¿é(Î»ÓÚ " << this->exer.cbpos << u8") ÊÔÍ¼Ö´ĞĞ±¸·İ,µ«ÒòÅäÖÃÎÄ¼ş²»ÔÊĞí±»À¹½ØÁË");
-				L_WARNING(string("ÃüÁî·½¿é(Î»ÓÚ ") + this->exer.cbpos + ") ÊÔÍ¼Ö´ĞĞ±¸·İ");
+				PRWARN(u8"å‘½ä»¤æ–¹å—(ä½äº " << this->exer.cbpos << u8") è¯•å›¾æ‰§è¡Œå¤‡ä»½,ä½†å› é…ç½®æ–‡ä»¶ä¸å…è®¸è¢«æ‹¦æˆªäº†");
+				L_WARNING(string("å‘½ä»¤æ–¹å—(ä½äº ") + this->exer.cbpos + ") è¯•å›¾æ‰§è¡Œå¤‡ä»½");
 			}
 			return false;
 		}
-		PR(u8"´´½¨±¸·İ...");
+		PR(u8"åˆ›å»ºå¤‡ä»½...");
 		runcmd("save hold");
 		this_thread::sleep_for(chrono::milliseconds(2500));
-		sendText("all", string("¡ìb[QuickBackupX] ¿ªÊ¼´´½¨±¸·İ: ") + this->time);
+		sendText("all", string("Â§b[QuickBackupX] å¼€å§‹åˆ›å»ºå¤‡ä»½: ") + this->time);
 		ULARGE_INTEGER bavfree;
 		ULARGE_INTEGER btotal;
 		ULARGE_INTEGER bfree;
 		GetDiskFreeSpaceExA(bdisk.c_str(), &bavfree, &btotal, &bfree);
 		if (to_Byte(bavfree) <= lsize)
 		{
-			PRWARN(u8"´ÅÅÌ¿ÉÓÃ¿Õ¼äÉÙÓÚµ±Ç°´æµµ´óĞ¡,ÒÑÈ¡Ïû±¸·İ!");
-			sendText("all", "¡ìc´ÅÅÌ¿ÉÓÃ¿Õ¼äÉÙÓÚµ±Ç°´æµµ´óĞ¡,ÒÑÈ¡Ïû±¸·İ!");
+			PRWARN(u8"ç£ç›˜å¯ç”¨ç©ºé—´å°‘äºå½“å‰å­˜æ¡£å¤§å°,å·²å–æ¶ˆå¤‡ä»½!");
+			sendText("all", "Â§cç£ç›˜å¯ç”¨ç©ºé—´å°‘äºå½“å‰å­˜æ¡£å¤§å°,å·²å–æ¶ˆå¤‡ä»½!");
 			return false;
 		}
 		LARGE_INTEGER freq;
 		LARGE_INTEGER begin;
 		LARGE_INTEGER end;
 		double timec;
-		Debug{ L_INFO("±¸·İ¿ªÊ¼¼ÆÊ±"); }
+		Debug{ L_INFO("å¤‡ä»½å¼€å§‹è®¡æ—¶"); }
 		QueryPerformanceFrequency(&freq);
 		QueryPerformanceCounter(&begin);
-		ZRESULT res = this->Create(); // Ö´ĞĞ±¸·İ
+		ZRESULT res = this->Create(); // æ‰§è¡Œå¤‡ä»½
 		QueryPerformanceCounter(&end);
-		timec = (double)(end.QuadPart - begin.QuadPart) / (double)freq.QuadPart; // »ñÈ¡¼ÆÊ±½á¹û
+		timec = (double)(end.QuadPart - begin.QuadPart) / (double)freq.QuadPart; // è·å–è®¡æ—¶ç»“æœ
 
 		if (res == ZR_OK)
 		{
-			Debug{ L_INFO("¿ªÊ¼»ñÈ¡±¸·İĞÅÏ¢"); }
+			Debug{ L_INFO("å¼€å§‹è·å–å¤‡ä»½ä¿¡æ¯"); }
 			if (!filesystem::exists(this->path))
 			{
-				PRERR(u8"±¸·İÎÄ¼ş²»´æÔÚ");
-				PRERR(u8"±¸·İÊ§°Ü!!!");
-				sendText("all", "¡ìc±¸·İÊ§°Ü!");
+				PRERR(u8"å¤‡ä»½æ–‡ä»¶ä¸å­˜åœ¨");
+				PRERR(u8"å¤‡ä»½å¤±è´¥!!!");
+				sendText("all", "Â§cå¤‡ä»½å¤±è´¥!");
 				return false;
 			}
 			this->size = getFileSize(this->path.string());
@@ -139,7 +140,7 @@ namespace QuickBackupX
 			this->md5 = md5file(fp);
 			fclose(fp);
 			rec->AddRecord(this);
-			int quan = rec->getBackupQuantity();
+			int quan = rec->blist.size();
 			string ssize = SizeToString(this->size);
 			string disk = this->path.string().substr(0, 3);
 
@@ -149,8 +150,8 @@ namespace QuickBackupX
 			GetDiskFreeSpaceExA(disk.c_str(), &avfree, &total, &free);
 			if (to_GB(total) == 0)
 			{
-				L_ERROR("³ıÁã¾¯¸æ!!!");
-				PRERR(u8"³ıÁã¾¯¸æ!!!");
+				L_ERROR("é™¤é›¶è­¦å‘Š!!!");
+				PRERR(u8"é™¤é›¶è­¦å‘Š!!!");
 				Sleep(3000);
 				throw 103;
 				return false;
@@ -160,127 +161,127 @@ namespace QuickBackupX
 			double fcompr = ((double)this->size / lsize) * 100;
 			string compr = round_str(fcompr, 2) + "%";
 
-			L_INFO("±¸·İ³É¹¦(0)");
-			PR(u8"±¸·İÍê³É! (ºÄÊ± " << timec << u8" Ãë)");
-			sendText("all", string("¡ìa±¸·İÍê³É! (ºÄÊ± ") + to_string(timec) + u8" Ãë)");
-			PR(u8"- ´Ë´Î±¸·İ´æµµ´óĞ¡: " << ssize << "(" << this->size << " B)");
-			PR(u8"- ´Ë´Î±¸·İ´æµµÂ·¾¶: " << this->path.string());
-			PR(u8"- ´Ë´Î±¸·İ´æµµMD5: " << this->md5);
-			PR(u8"- ´Ë´Î±¸·İµÄÖ´ĞĞÕß: " << this->exer.to_string());
-			PR(u8"- ´Ë´Î±¸·İµÄÑ¹ËõÂÊ: " << compr << u8" (Ô­´æµµ´óĞ¡:" << SizeToString(lsize) << ")");
-			PR(u8"- ±¸·İºóµÄ" << disk[0] << u8"ÅÌ×´Ì¬: " << u8"ÒÑÓÃ " << diskus << u8"GB, ¿ÉÓÃ " << to_GB(avfree) << u8"GB, Ê¹ÓÃÂÊ: " << diskur << "%");
-			PR(u8"µ±Ç°¹²ÓĞ " << quan << u8" ¸ö±¸·İ ·¢ËÍ\"qb list\"ÒÔ»ñµÃ¸ü¶à±¸·İĞÅÏ¢");
-			sendText("all", string("- ¡ìc´Ë´Î±¸·İ´æµµ´óĞ¡: ") + ssize + "(" + to_string(this->size) + " B)");
-			sendText("all", string("- ¡ì6´Ë´Î±¸·İ´æµµÂ·¾¶: ") + this->path.string());
-			sendText("all", string("- ¡ìe´Ë´Î±¸·İ´æµµMD5: ") + this->md5);
-			sendText("all", string("- ¡ìa´Ë´Î±¸·İµÄÖ´ĞĞÕß: ") + this->exer.to_string());
-			sendText("all", string("- ¡ì3´Ë´Î±¸·İµÄÑ¹ËõÂÊ: ") + compr + " (Ô­´æµµ´óĞ¡:" + SizeToString(lsize) + ")");
-			sendText("all", string("- ¡ìb±¸·İºóµÄ") + disk[0] + "ÅÌ×´Ì¬: " + "ÒÑÓÃ " + to_string(diskus) + "GB, ¿ÉÓÃ " + to_string(to_GB(avfree)) + "GB, Ê¹ÓÃÂÊ: " + to_string(diskur) + "%");
-			sendText("all", string("¡ì5µ±Ç°¹²ÓĞ ") + to_string(quan) + " ¸ö±¸·İ ·¢ËÍ\\\"qb list\\\"ÒÔ»ñµÃ¸ü¶à±¸·İĞÅÏ¢");
+			L_INFO("å¤‡ä»½æˆåŠŸ(0)");
+			PR(u8"å¤‡ä»½å®Œæˆ! (è€—æ—¶ " << timec << u8" ç§’)");
+			sendText("all", string("Â§aå¤‡ä»½å®Œæˆ! (è€—æ—¶ ") + to_string(timec) + u8" ç§’)");
+			PR(u8"- æ­¤æ¬¡å¤‡ä»½å­˜æ¡£å¤§å°: " << ssize << "(" << this->size << " B)");
+			PR(u8"- æ­¤æ¬¡å¤‡ä»½å­˜æ¡£è·¯å¾„: " << this->path.string());
+			PR(u8"- æ­¤æ¬¡å¤‡ä»½å­˜æ¡£MD5: " << this->md5);
+			PR(u8"- æ­¤æ¬¡å¤‡ä»½çš„æ‰§è¡Œè€…: " << this->exer.to_string());
+			PR(u8"- æ­¤æ¬¡å¤‡ä»½çš„å‹ç¼©ç‡: " << compr << u8" (åŸå­˜æ¡£å¤§å°:" << SizeToString(lsize) << ")");
+			PR(u8"- å¤‡ä»½åçš„" << disk[0] << u8"ç›˜çŠ¶æ€: " << u8"å·²ç”¨ " << diskus << u8"GB, å¯ç”¨ " << to_GB(avfree) << u8"GB, ä½¿ç”¨ç‡: " << diskur << "%");
+			PR(u8"å½“å‰å…±æœ‰ " << quan << u8" ä¸ªå¤‡ä»½ å‘é€\"qb list\"ä»¥è·å¾—æ›´å¤šå¤‡ä»½ä¿¡æ¯");
+			sendText("all", string("- Â§cæ­¤æ¬¡å¤‡ä»½å­˜æ¡£å¤§å°: ") + ssize + "(" + to_string(this->size) + " B)");
+			sendText("all", string("- Â§6æ­¤æ¬¡å¤‡ä»½å­˜æ¡£è·¯å¾„: ") + this->path.string());
+			sendText("all", string("- Â§eæ­¤æ¬¡å¤‡ä»½å­˜æ¡£MD5: ") + this->md5);
+			sendText("all", string("- Â§aæ­¤æ¬¡å¤‡ä»½çš„æ‰§è¡Œè€…: ") + this->exer.to_string());
+			sendText("all", string("- Â§3æ­¤æ¬¡å¤‡ä»½çš„å‹ç¼©ç‡: ") + compr + " (åŸå­˜æ¡£å¤§å°:" + SizeToString(lsize) + ")");
+			sendText("all", string("- Â§bå¤‡ä»½åçš„") + disk[0] + "ç›˜çŠ¶æ€: " + "å·²ç”¨ " + to_string(diskus) + "GB, å¯ç”¨ " + to_string(to_GB(avfree)) + "GB, ä½¿ç”¨ç‡: " + to_string(diskur) + "%");
+			sendText("all", string("Â§5å½“å‰å…±æœ‰ ") + to_string(quan) + " ä¸ªå¤‡ä»½ å‘é€\\\"qb list\\\"ä»¥è·å¾—æ›´å¤šå¤‡ä»½ä¿¡æ¯");
 			return true;
 		}
 		else
 		{
-			PR(u8"±¸·İÊ§°Ü~ ([" << res << "]" << to_UTF8(ZipRetCheck(res)) << ")");
-			sendText("all", "¡ìc±¸·İÊ§°Ü~ ÇëÁªÏµ·şÖ÷");
-			L_ERROR(string("±¸·İÊ§°Ü: (") + to_string(res) + ")" + ZipRetCheck(res));
+			PR(u8"å¤‡ä»½å¤±è´¥~ ([" << res << "]" << to_UTF8(ZipRetCheck(res)) << ")");
+			sendText("all", "Â§cå¤‡ä»½å¤±è´¥~ è¯·è”ç³»æœä¸»");
+			L_ERROR(string("å¤‡ä»½å¤±è´¥: (") + to_string(res) + ")" + ZipRetCheck(res));
 			return false;
 		}
 	}
 
 	bool Backup::Delete(Backup::Executor exer)
 	{
-		L_INFO(string("É¾³ı±¸·İ[") + to_string(this->onum) + "]");
+		L_INFO(string("åˆ é™¤å¤‡ä»½[") + to_string(this->onum) + "]");
 		if (this->CheckDeletePermission(exer))
 		{
 			if (!filesystem::exists(this->path))
 			{
-				L_WARNING(string("- Î´ÕÒµ½±¸·İ[") + to_string(this->onum) + "] " + this->path.string() + " ÎÄ¼ş");
-				PRWARN(u8"Î´ÕÒµ½±¸·İ[" << this->onum << "] " << this->path.string() << u8" ÎÄ¼ş");
-				PR(u8"É¾³ı±¸·İ[" << this->onum << u8"] µÄ¼ÇÂ¼...");
+				L_WARNING(string("- æœªæ‰¾åˆ°å¤‡ä»½[") + to_string(this->onum) + "] " + this->path.string() + " æ–‡ä»¶");
+				PRWARN(u8"æœªæ‰¾åˆ°å¤‡ä»½[" << this->onum << "] " << this->path.string() << u8" æ–‡ä»¶");
+				PR(u8"åˆ é™¤å¤‡ä»½[" << this->onum << u8"] çš„è®°å½•...");
 				bool drres = rec->DeleteRecord(this->onum);
 				if (exer.type == Player_Type)
 				{
-					sendText(exer.pname, string("¡ìeÎ´ÕÒµ½±¸·İ[") + to_string(this->onum) + "] " + this->path.string() + " ÎÄ¼ş");
-					TellAdmin(string("¡ìeÎ´ÕÒµ½±¸·İ[") + to_string(this->onum) + "] " + this->path.string() + " ÎÄ¼ş");
-					sendText(exer.pname, string("¡ìc±¸·İ[") + to_string(this->onum) + "] ¼ÇÂ¼ÒÑÉ¾³ı");
-					TellAdmin(string("¡ìc±¸·İ[") + to_string(this->onum) + "] ¼ÇÂ¼ÒÑÉ¾³ı");
+					sendText(exer.pname, string("Â§eæœªæ‰¾åˆ°å¤‡ä»½[") + to_string(this->onum) + "] " + this->path.string() + " æ–‡ä»¶");
+					TellAdmin(string("Â§eæœªæ‰¾åˆ°å¤‡ä»½[") + to_string(this->onum) + "] " + this->path.string() + " æ–‡ä»¶");
+					sendText(exer.pname, string("Â§cå¤‡ä»½[") + to_string(this->onum) + "] è®°å½•å·²åˆ é™¤");
+					TellAdmin(string("Â§cå¤‡ä»½[") + to_string(this->onum) + "] è®°å½•å·²åˆ é™¤");
 				}
 				return true;
 			}
 			else
 			{
-				PR(u8"É¾³ı±¸·İÎÄ¼ş...");
-				L_INFO("- É¾³ı±¸·İÎÄ¼ş...");
+				//PR(u8"åˆ é™¤å¤‡ä»½æ–‡ä»¶...");
+				L_INFO("- åˆ é™¤å¤‡ä»½æ–‡ä»¶...");
 				bool fsres = filesystem::remove(this->path);
-				PR(u8"É¾³ı±¸·İ¼ÇÂ¼...");
-				L_INFO("- É¾³ı±¸·İ¼ÇÂ¼...");
+				//PR(u8"åˆ é™¤å¤‡ä»½è®°å½•...");
+				L_INFO("- åˆ é™¤å¤‡ä»½è®°å½•...");
 				bool drres = rec->DeleteRecord(this->onum);
 				if (!fsres)
 				{
-					PRERR(u8"É¾³ı±¸·İÎÄ¼şÊ±³öÏÖÁËÒì³£!!!");
-					L_ERROR("- É¾³ı±¸·İÎÄ¼şÊ±³öÏÖÁËÒì³£!!!");
+					PRERR(u8"åˆ é™¤å¤‡ä»½æ–‡ä»¶æ—¶å‡ºç°äº†å¼‚å¸¸!!!");
+					L_ERROR("- åˆ é™¤å¤‡ä»½æ–‡ä»¶æ—¶å‡ºç°äº†å¼‚å¸¸!!!");
 				}
 				if (!drres)
 				{
-					PRERR(u8"É¾³ı±¸·İ¼ÇÂ¼Ê±³öÏÖÁËÒì³£!!!");
-					L_ERROR("- É¾³ı±¸·İ¼ÇÂ¼Ê±³öÏÖÁËÒì³£!!!");
+					PRERR(u8"åˆ é™¤å¤‡ä»½è®°å½•æ—¶å‡ºç°äº†å¼‚å¸¸!!!");
+					L_ERROR("- åˆ é™¤å¤‡ä»½è®°å½•æ—¶å‡ºç°äº†å¼‚å¸¸!!!");
 				}
 				if (fsres && drres)
 				{
-					PR(u8"É¾³ı³É¹¦!");
-					L_INFO("- É¾³ı³É¹¦!");
+					PR(u8"åˆ é™¤æˆåŠŸ!");
+					L_INFO("- åˆ é™¤æˆåŠŸ!");
 				}
-				//delete this; MSVC±àÒëÕı³£,ÆäËûÆ½Ì¨¿ÉÄÜ²»»áÆğ×÷ÓÃ
+				//delete this; MSVCç¼–è¯‘æ­£å¸¸,å…¶ä»–å¹³å°å¯èƒ½ä¸ä¼šèµ·ä½œç”¨
 			}
 		}
 		else
 		{
-			sendText(exer.pname, "¡ìcÄúÃ»ÓĞÈ¨ÏŞÖ´ĞĞ´Ë²Ù×÷!!!");
-			TellAdmin(string("¡ìc") + exer.pname + " ÊÔÍ¼Ö´ĞĞÉ¾³ı²Ù×÷!!!");
+			sendText(exer.pname, "Â§cæ‚¨æ²¡æœ‰æƒé™æ‰§è¡Œæ­¤æ“ä½œ!!!");
+			TellAdmin(string("Â§c") + exer.pname + " è¯•å›¾æ‰§è¡Œåˆ é™¤æ“ä½œ!!!");
 		}
 		return false;
 	}
 
 	bool Backup::Resume(Backup::Executor exer)
 	{
-		PR(u8"¿ªÊ¼»Øµµ!Äú¿ÉÒÔ¹Ø±ÕBDS½ø³ÌÒÔÈ¡Ïû´Ë»Øµµ(¿ÉÄÜµ¼ÖÂ´íÎó)");
-		L_INFO("¿ªÊ¼»Øµµ!");
+		PR(u8"å¼€å§‹å›æ¡£!æ‚¨å¯ä»¥å…³é—­BDSè¿›ç¨‹ä»¥å–æ¶ˆæ­¤å›æ¡£(å¯èƒ½å¯¼è‡´é”™è¯¯)");
+		L_INFO("å¼€å§‹å›æ¡£!");
 		DWORD pid = GetCurrentProcessId();
 		if (!filesystem::exists(this->path))
 		{
-			PRWARN(u8"ĞèÒª»ØµµµÄ´æµµÒÑ²»´æÔÚ!É¾³ı¼ÇÂ¼...");
-			L_WARNING("ĞèÒª»ØµµµÄ´æµµÒÑ²»´æÔÚ!É¾³ı¼ÇÂ¼...");
+			PRWARN(u8"éœ€è¦å›æ¡£çš„å­˜æ¡£å·²ä¸å­˜åœ¨!åˆ é™¤è®°å½•...");
+			L_WARNING("éœ€è¦å›æ¡£çš„å­˜æ¡£å·²ä¸å­˜åœ¨!åˆ é™¤è®°å½•...");
 			if (exer.type == Player_Type)
 			{
-				sendText(exer.pname, "ĞèÒª»ØµµµÄ´æµµÒÑ²»´æÔÚ!É¾³ı¼ÇÂ¼...");
-				TellAdmin("ĞèÒª»ØµµµÄ´æµµÒÑ²»´æÔÚ!É¾³ı¼ÇÂ¼...");
+				sendText(exer.pname, "éœ€è¦å›æ¡£çš„å­˜æ¡£å·²ä¸å­˜åœ¨!åˆ é™¤è®°å½•...");
+				TellAdmin("éœ€è¦å›æ¡£çš„å­˜æ¡£å·²ä¸å­˜åœ¨!åˆ é™¤è®°å½•...");
 			}
 			rec->DeleteRecord(this->onum);
 			return false;
 		}
-		L_INFO("´ò¿ª±¸·İ...");
-		HZIP hz = OpenZip(this->path.wstring().c_str(), 0);
+		L_INFO("æ‰“å¼€å¤‡ä»½...");
+		/*HZIP hz = OpenZip(this->path.wstring().c_str(), 0);
 		ZIPENTRY ze; 
 		GetZipItem(hz, -1, &ze); 
 		int numitems = ze.index;
-		L_INFO("¿ªÊ¼½âÑ¹...");
+		L_INFO("å¼€å§‹è§£å‹...");
 		for (int i = 0; i < numitems; i++)
 		{
 			GetZipItem(hz, i, &ze);
-			Debug{ L_INFO(string("- ½âÑ¹ ") + filesystem::path(ze.name).string() + " ÖÁ " + RESUMEDIR + filesystem::path(ze.name).string()); }
+			Debug{ L_INFO(string("- è§£å‹ ") + filesystem::path(ze.name).string() + " è‡³ " + RESUMEDIR + filesystem::path(ze.name).string()); }
 			UnzipItem(hz, i, CharToWChar((RESUMEDIR + filesystem::path(ze.name).string()).c_str()));
 		}
-		ZRESULT res = CloseZip(hz);
-		if (res == ZR_OK)
+		ZRESULT res = CloseZip(hz);*/
+		if (ZR_OK)
 		{
-			L_INFO("½âÑ¹³É¹¦(0)");
-			PR(u8"½âÑ¹³É¹¦!");
+			L_INFO("è§£å‹æˆåŠŸ(0)");
+			PR(u8"è§£å‹æˆåŠŸ!");
 		}
 		else
 		{
-			L_ERROR(string("½âÑ¹Ê§°Ü: ([") + to_string(res) + "]" + ZipRetCheck(res) + ")");
-			PR(u8"½âÑ¹Ê§°Ü~ ([" << res << "]" << ZipRetCheck(res) << ")");
+			//L_ERROR(string("è§£å‹å¤±è´¥: ([") + to_string(res) + "]" + ZipRetCheck(res) + ")");
+			//PR(u8"è§£å‹å¤±è´¥~ ([" << res << "]" << ZipRetCheck(res) << ")");
 		}
 	}
 
@@ -313,6 +314,7 @@ namespace QuickBackupX
 	bool Backup::CheckDeletePermission(Backup::Executor exer)
 	{
 		if (exer.type == Console_Type) return true;
+		if (exer.type == AutoBak_Type) return true;
 		if (exer.type == Player_Type)
 		{
 			if (Is_Admin(exer.pname, exer.pxuid)) return true;
@@ -352,10 +354,13 @@ namespace QuickBackupX
 	{
 		int i;
 		string bpath = to_UTF8(getCustomTime(cfg->bop.c_str()));
-		this->CopyLevelToTempDir();
-		this->IterTempDir();
+		Directory ldir(this->lpath);
+		ldir.copy_all_to(BACKUPDIR);
+		Directory dir(BACKUPDIR);
+		dir.dirlist();
+		this->flist = dir;
 		size_t flsize = this->flist.size();
-		Debug{ L_INFO(string("´´½¨ ") + bpath + " ÎÄ¼ş..."); }
+		Debug{ L_INFO(string("åˆ›å»º ") + bpath + " æ–‡ä»¶..."); }
 		i = 2;
 		while (filesystem::exists(bpath))
 		{
@@ -368,140 +373,19 @@ namespace QuickBackupX
 			}
 			i++;
 		}
-		this->hz = CreateZip(CharToWChar(bpath.c_str()), 0);
-		if (this->hz == NULL) throw 107;
-		L_INFO(string("¿ªÊ¼Ñ¹Ëõ ¹²ÓĞ ") + to_string(flsize) + " ¸öÎÄ¼ş´ıÑ¹Ëõ");
-		PR(u8"¿ªÊ¼Ñ¹Ëõ ¹²ÓĞ " << flsize << u8" ¸öÎÄ¼ş´ıÑ¹Ëõ");
-		sendText("all", string("¿ªÊ¼Ñ¹Ëõ ¹²ÓĞ ") + to_string(flsize) + " ¸öÎÄ¼ş´ıÑ¹Ëõ");
-		map<string, filesystem::path>::iterator iter = this->flist.begin();
-		i = 0;
-		for (; iter != this->flist.end(); ++iter)
-		{
-			i++;
-			sendText("all", string("ÕıÔÚÑ¹ËõµÚ ") + to_string(i) + " / " + to_string(flsize) + " ¸öÎÄ¼ş");
-			Debug{ L_INFO(string("- Ìí¼ÓÎÄ¼ş: ") + iter->second.string() + " ÖÁ " + iter->first); }
-			ZipAdd(this->hz, CharToWChar(iter->first.c_str()), CharToWChar(iter->second.string().c_str()));
-		}
-		this->DeleteTempDir();
-		Debug{ L_INFO(string("¹Ø±Õ²¢Ğ´Èë ") + bpath + " ÎÄ¼ş..."); }
-		ZRESULT rv = CloseZip(this->hz);
+		QBZIP zip(bpath);
+		L_INFO(string("å¼€å§‹å‹ç¼© å…±æœ‰ ") + to_string(flsize) + " ä¸ªæ–‡ä»¶å¾…å‹ç¼©");
+		PR(u8"å¼€å§‹å‹ç¼© å…±æœ‰ " << flsize << u8" ä¸ªæ–‡ä»¶å¾…å‹ç¼©");
+		sendText("all", string("Â§eå¼€å§‹å‹ç¼© å…±æœ‰ ") + to_string(flsize) + " ä¸ªæ–‡ä»¶å¾…å‹ç¼©");
+		using FUNC = bool(QBZIP::*)(map<string, string>);
+		FUNC add1 = &QBZIP::Add;
+		thread th(bind(add1, ref(zip), this->flist));
+		th.join();
+		dir.delete_all();
+		Debug{ L_INFO(string("å…³é—­å¹¶å†™å…¥ ") + bpath + " æ–‡ä»¶..."); }
+		zip.Save();
 		if (filesystem::exists(bpath))
 			this->path = filesystem::canonical(filesystem::path(bpath));
-		return rv;
-	}
-
-	bool Backup::CopyLevelToTempDir()
-	{
-		if (exists(filesystem::path(TEMPDIR)))
-		{
-			PRWARN(u8"ÁÙÊ±Ä¿Â¼(" << TEMPDIR << u8")ÒÑ¾­´æÔÚ!!!");
-			L_WARNING("ÁÙÊ±Ä¿Â¼(" + TEMPDIR + ")ÒÑ¾­´æÔÚ!!!");
-			this->DeleteTempDir();
-		}
-		filesystem::copy(this->lpath, filesystem::path(TEMPDIR));
-		Debug{ L_INFO(string("ÒÑ¸´ÖÆ ").append(this->lpath.string().append(" ÖÁ ").append(TEMPDIR))); }
-		L_INFO(string("¿ªÊ¼±éÀúÄ¿Â¼:").append(this->lpath.string()));
-		Debug{ L_INFO("ÒÑ¹¹Ôì std::filesystem::path ¶ÔÏó"); }
-		if (!exists(this->lpath))
-		{
-			PRERR(u8"Ä¿Â¼ " << this->lpath.string() << u8" ²»´æÔÚ!!!");
-			L_ERROR(string("Ä¿Â¼ ") + this->lpath.string() + " ²»´æÔÚ!!!");
-			return false;
-		}
-		if (!exists(filesystem::path(TEMPDIR)))
-		{
-			PRERR(u8"Ä¿Â¼ " << TEMPDIR << u8" ²»´æÔÚ!!!");
-			L_ERROR(string("Ä¿Â¼ ") + TEMPDIR + u8" ²»´æÔÚ!!!");
-			return false;
-		}
-		filesystem::directory_entry entry(this->lpath);
-		Debug{ L_INFO("ÒÑ¹¹Ôì std::filesystem::directory_entry ¶ÔÏó"); }
-		if (entry.status().type() != filesystem::file_type::directory)
-		{
-			PRERR(this->lpath.string() << u8" ²»ÊÇÎÄ¼ş¼Ğ!!!");
-			L_ERROR(this->lpath.string() + " ²»ÊÇÎÄ¼ş¼Ğ!!!");
-			return false;
-		}
-		filesystem::directory_iterator list(this->lpath);
-		Debug{ L_INFO("ÒÑ¹¹Ôì std::filesystem::directory_iterator ¶ÔÏó"); }
-		for (auto& it : list)
-		{
-			if (it.status().type() == filesystem::file_type::directory)
-			{
-				Debug{ L_INFO(string("- ÎÄ¼ş¼Ğ: ").append(it.path().string())); }
-				filesystem::copy(it.path(), filesystem::path(TEMPDIR + it.path().filename().string()));
-				Debug{ L_INFO(string("ÒÑ¸´ÖÆ ") + it.path().string() + " ÖÁ " + TEMPDIR + it.path().filename().string()); }
-			}
-		}
-		return true;
-	}
-
-	bool Backup::DeleteTempDir()
-	{
-		Debug{ L_INFO(string("¿ªÊ¼É¾³ıÁÙÊ±Ä¿Â¼: ") + TEMPDIR); }
-		if (!exists(filesystem::path(TEMPDIR)))
-		{
-			PRWARN(u8"ÁÙÊ±Ä¿Â¼(" << TEMPDIR << u8")²»´æÔÚ!!!");
-			L_WARNING("ÁÙÊ±Ä¿Â¼(" + TEMPDIR + ")²»´æÔÚ!!!");
-			return true;
-		}
-		size_t dfc = filesystem::remove_all(filesystem::path(TEMPDIR));
-		Debug{ L_INFO(TEMPDIR + " ÒÑÉ¾³ı,¹²É¾³ıÁË " + to_string(dfc) + " ¸öÎÄ¼ş"); }
-		return true;
-	}
-
-	size_t Backup::getLevelSize()
-	{
-		return filesystem::file_size(this->lpath);
-	}
-
-	bool Backup::IterTempDir(string path)
-	{
-		string tempd;
-		if (path == "") tempd = TEMPDIR;
-		else tempd = TEMPDIR + path + "/";
-		filesystem::path dir(tempd);
-		L_INFO(string("¿ªÊ¼±éÀúÄ¿Â¼:").append(tempd));
-		Debug{ L_INFO("ÒÑ¹¹Ôì std::filesystem::path ¶ÔÏó"); }
-		if (!exists(dir))
-		{
-			PRERR(u8"Ä¿Â¼ " << tempd << u8" ²»´æÔÚ!!!");
-			L_ERROR(string("Ä¿Â¼ ") + tempd + " ²»´æÔÚ!!!");
-			return false;
-		}
-		filesystem::directory_entry entry(dir);
-		Debug{ L_INFO("ÒÑ¹¹Ôì std::filesystem::directory_entry ¶ÔÏó"); }
-		if (entry.status().type() != filesystem::file_type::directory)
-		{
-			PRERR(tempd << u8" ²»ÊÇÎÄ¼ş¼Ğ!!!");
-			L_ERROR(tempd + " ²»ÊÇÎÄ¼ş¼Ğ!!!");
-			return false;
-		}
-		filesystem::directory_iterator list(dir);
-		Debug{ L_INFO("ÒÑ¹¹Ôì std::filesystem::directory_iterator ¶ÔÏó"); }
-		for (auto& it : list)
-		{
-			if (it.path().filename().string() == "lost") continue;
-			if (it.status().type() == filesystem::file_type::directory)
-			{
-				string in = path + it.path().filename().string();
-				IterTempDir(in);
-				continue;
-			}
-			if (path == "")
-			{
-				this->flist.insert(
-					pair<string, filesystem::path>(it.path().filename().string(), it.path())
-				);
-			}
-			else
-			{
-				this->flist.insert(
-					pair<string, filesystem::path>(path + "/" + it.path().filename().string(), it.path())
-				);
-			}
-			Debug{ L_INFO(string("- ÎÄ¼ş: ").append(it.path().string())); }
-		}
-		return true;
+		return 0i64;
 	}
 }

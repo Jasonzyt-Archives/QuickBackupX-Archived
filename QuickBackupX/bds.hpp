@@ -1,4 +1,4 @@
-// Created by JasonZYT on 2021/02/05
+ï»¿// Created by JasonZYT on 2021/02/05
 #pragma once
 //#ifndef QBX_BDSHPP_INCLUDED
 //#define QBX_BDSHPP_INCLUDED
@@ -28,7 +28,7 @@ namespace QuickBackupX
 	};
 
 	struct MCUUID {
-		// È¡uuid×Ö·û´®
+		// å–uuidå­—ç¬¦ä¸²
 		std::string toString() {
 			std::string s;
 			SYMCALL<std::string&>("?asString@UUID@mce@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ", this, &s);
@@ -36,51 +36,51 @@ namespace QuickBackupX
 		}
 	};
 	struct Actor {
-		// »ñÈ¡ÉúÎïÃû³ÆĞÅÏ¢
+		// è·å–ç”Ÿç‰©åç§°ä¿¡æ¯
 		std::string getNameTag() {
 			return SYMCALL<std::string&>("?getNameTag@Actor@@UEBAAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ", this);
 		}
-		// »ñÈ¡ÉúÎïµ±Ç°Ëù´¦Î¬¶ÈID
+		// è·å–ç”Ÿç‰©å½“å‰æ‰€å¤„ç»´åº¦ID
 		int getDimensionId() {
 			int dimensionId;
 			SYMCALL<int&>("?getDimensionId@Actor@@UEBA?AV?$AutomaticID@VDimension@@H@@XZ", this, &dimensionId);
 			return dimensionId;
 		}
-		// »ñÈ¡ÉúÎïµ±Ç°ËùÔÚ×ø±ê
+		// è·å–ç”Ÿç‰©å½“å‰æ‰€åœ¨åæ ‡
 		Vec3* getPos() {
 			return SYMCALL<Vec3*>("?getPos@Actor@@UEBAAEBVVec3@@XZ", this);
 		}
-		// »ñÈ¡ÉúÎïÀàĞÍ
+		// è·å–ç”Ÿç‰©ç±»å‹
 		std::string getTypeName() {
 			std::string actor_typename;
 			SYMCALL<std::string&>("?getEntityName@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVActor@@@Z", &actor_typename, this);
 			return actor_typename;
 		}
-		// »ñÈ¡ÉúÎïÀàĞÍID
+		// è·å–ç”Ÿç‰©ç±»å‹ID
 		int getTypeID() {
 			return SYMCALL<__int64>("?getEntityTypeId@Actor@@UEBA?AW4ActorType@@XZ", this);
 			//return *(unsigned int *)(this + 908);
 		}
-		// ÊÇ·ñĞü¿Õ
+		// æ˜¯å¦æ‚¬ç©º
 		const BYTE isStand() {				// IDA MovePlayerPacket::MovePlayerPacket
 			return *reinterpret_cast<BYTE*>(reinterpret_cast<VA>(this) + 448);
 		}
 	};
 
 	struct Player : Actor {
-		// È¡uuid
+		// å–uuid
 		MCUUID* getUuid() {
 			return (MCUUID*)((VA)this + 2720);
 		}
-		// È¡xuid
+		// å–xuid
 		std::string getXuid(VA level) {
 			return SYMCALL<std::string&>("?getPlayerXUID@Level@@QEBAAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVUUID@mce@@@Z", level, (VA)this + 2720);
 		}
-		// »ñÈ¡ÍøÂç±êÊ¶·û
+		// è·å–ç½‘ç»œæ ‡è¯†ç¬¦
 		VA getNetId() {
 			return (VA)this + 2944;		// IDA ServerPlayer::setPermissions
 		}
-		// ·¢ËÍÊı¾İ°ü
+		// å‘é€æ•°æ®åŒ…
 		VA sendPacket(VA pkt) {
 			return SYMCALL<VA>("?sendNetworkPacket@ServerPlayer@@UEBAXAEAVPacket@@@Z", this, pkt);
 		}
@@ -105,11 +105,11 @@ namespace QuickBackupX
 		}
 	};
 	struct BlockPos : BPos3 {
-		// »ñÈ¡×ø±êÊı×éÍ·
+		// è·å–åæ ‡æ•°ç»„å¤´
 		BPos3* getPosition() const {
 			return (BPos3*)this;
 		}
-		/*Í¨¹ı BDS µÄÖ¸ÁîÔ­ÉúÊä³ö
+		/*é€šè¿‡ BDS çš„æŒ‡ä»¤åŸç”Ÿè¾“å‡º
 		std::string toString() {
 			std::string s;
 			SYMCALL<string&>("?toString@BlockPos@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ", this, &s);
@@ -119,14 +119,14 @@ namespace QuickBackupX
 		{
 			return std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z);
 		}
-		// Í¨¹ı Vec3 ¹¹Ôì BlockPos
+		// é€šè¿‡ Vec3 æ„é€  BlockPos
 		BlockPos(const void* vec3) {
 			auto v = (float*)vec3;
 			x = v ? (int)v[0] : 0;
 			y = v ? (int)v[1] : 0;
 			z = v ? (int)v[2] : 0;
 		}
-		// Í¨¹ı double ¹¹Ôì BlockPos
+		// é€šè¿‡ double æ„é€  BlockPos
 		BlockPos(double x2, double y2, double z2) {
 			x = (int)x2;
 			y = (int)y2;
@@ -137,11 +137,11 @@ namespace QuickBackupX
 		}
 	};
 	struct BlockLegacy {
-		// »ñÈ¡·½¿éÃû
+		// è·å–æ–¹å—å
 		auto getFullName() const {				// IDA BlockLegacy::~BlockLegacy
 			return (std::string&)*(__int64*)((__int64)this + 104);
 		}
-		// »ñÈ¡·½¿éIDºÅ
+		// è·å–æ–¹å—IDå·
 		auto getBlockItemID() const {			// IDA BlockLegacy::BlockLegacy VanillaItems::serverInitCreativeItemsCallback Item::beginCreativeGroup "itemGroup.name.planks"
 			short v3 = *(short*)((VA)this + 312);
 			if (v3 < 0x100) {
@@ -152,36 +152,36 @@ namespace QuickBackupX
 	};
 
 	struct Block {
-		// »ñÈ¡Ô´
+		// è·å–æº
 		const BlockLegacy* getLegacyBlock() const {			// IDA LegacyStructureTemplate::_mapToProperty "waterlogged"
 			return SYMCALL<BlockLegacy*>("?getLegacyBlock@Block@@QEBAAEBVBlockLegacy@@XZ", this);
 		}
 	};
 
 	struct Dimension {
-		// »ñÈ¡·½¿éÔ´
+		// è·å–æ–¹å—æº
 		VA getBlockSource() {					// IDA Level::tickEntities
 			return *((VA*)this + 10);
 		}
 	};
 
 	struct BlockActor {
-		// È¡·½¿é
+		// å–æ–¹å—
 		Block* getBlock() {
 			return *reinterpret_cast<Block**>(reinterpret_cast<VA>(this) + 16);
 		}
-		// È¡·½¿éÎ»ÖÃ
+		// å–æ–¹å—ä½ç½®
 		BlockPos* getPosition() {				// IDA BlockActor::BlockActor
 			return reinterpret_cast<BlockPos*>(reinterpret_cast<VA>(this) + 44);
 		}
 	};
 
 	struct BlockSource {
-		// È¡·½¿é
+		// å–æ–¹å—
 		Block* getBlock(const BlockPos* blkpos) {
 			return SYMCALL<Block*>("?getBlock@BlockSource@@QEBAAEBVBlock@@AEBVBlockPos@@@Z", this, blkpos);
 		}
-		// »ñÈ¡·½¿éËù´¦Î¬¶È
+		// è·å–æ–¹å—æ‰€å¤„ç»´åº¦
 		int getDimensionId() {					// IDA Dimension::onBlockChanged
 			return *(int*)(*((VA*)this + 4) + 200);
 		}
@@ -192,7 +192,7 @@ namespace QuickBackupX
 	struct ModalFormRequestPacket {
 		char filler[0x48];
 	};
-	//È¡±íµ¥ID¼°±íµ¥Ñ¡Ïî
+	//å–è¡¨å•IDåŠè¡¨å•é€‰é¡¹
 	struct ModalFormResponsePacket {
 		UINT getFormId() {
 			return *(UINT*)((VA)this + 40);
@@ -227,7 +227,7 @@ namespace QuickBackupX
 	unsigned SendForm(std::string uuid, std::string str)
 	{
 		unsigned fid = getFormId();
-		// ´Ë´¦×ÔÖ÷´´½¨°ü
+		// æ­¤å¤„è‡ªä¸»åˆ›å»ºåŒ…
 		auto fr = [uuid, fid, str]() {
 			Player* p = PlayerUuid[uuid];
 			if (PlayerOnline[p]) {
@@ -246,19 +246,19 @@ namespace QuickBackupX
 #pragma region Command
 	struct CommandRequestPacket {
 		char filler[0x90];
-		// È¡ÃüÁîÎÄ±¾
+		// å–å‘½ä»¤æ–‡æœ¬
 		std::string toString() {			// IDA ServerNetworkHandler::handle
 			std::string str = std::string(*(std::string*)((VA)this + 40));
 			return str;
 		}
 	};
-	bool runcmd(std::string cmd)
+	inline bool runcmd(std::string cmd)
 	{
 		if (p_spscqueue != 0)
 			return SYMCALL<bool>("??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$SPSCQueue@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@$0CAA@@@AEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z", p_spscqueue, cmd);
 		return false;
 	}
-	bool sendText(std::string playername, std::string text)
+	inline bool sendText(std::string playername, std::string text)
 	{
 		if (OnlineQuan == 0) return false;
 		std::string cmd;
@@ -272,7 +272,7 @@ namespace QuickBackupX
 #pragma endregion
 
 #pragma region Other
-	// È¡·şÎñ¶Ë°æ±¾
+	// å–æœåŠ¡ç«¯ç‰ˆæœ¬
 	std::string getVersion() 
 	{
 		std::string a;

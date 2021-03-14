@@ -4,13 +4,16 @@
 #define QBX_BACKUP_INCLUDED
 #include "pch.h"
 #include "func.h"
+#include "file.h"
 #include "json/json.h"
 #include "zip/zip.h"
-#include "zip/unzip.h"
+#include "qbzip.h"
+//#include "zip/unzip.h"
 
 #define Console_Type QuickBackupX::Backup::Executor::Type::Console
 #define Player_Type  QuickBackupX::Backup::Executor::Type::Player
 #define Block_Type   QuickBackupX::Backup::Executor::Type::Block
+#define AutoBak_Type QuickBackupX::Backup::Executor::Type::AutoBackup
 #define Unknown_Type QuickBackupX::Backup::Executor::Type::Unknown
 
 namespace QuickBackupX
@@ -64,6 +67,8 @@ namespace QuickBackupX
 
 		/// 构造函数
 		Backup();
+		/// 析构函数
+		~Backup();
 		/// <summary>
 		/// 创建一个备份
 		/// </summary>
@@ -84,7 +89,7 @@ namespace QuickBackupX
 		bool Resume(Executor exer);
 
 		/// 零时文件列表
-		std::map<std::string,std::filesystem::path> flist;
+		std::map<std::string,std::string> flist;
 		/// 存档路径 -> 构造函数
 		std::filesystem::path lpath;
 		/// 备份路径
@@ -99,8 +104,6 @@ namespace QuickBackupX
 		size_t size = -1;
 		/// 备份序号
 		int onum = -1;
-		/// HZIP对象
-		HZIP hz;
 	private:
 		/// <summary>
 		/// 检查备份权限

@@ -1,4 +1,4 @@
-// Created by JasonZYT on 02/03/2021
+Ôªø// Created by JasonZYT on 02/03/2021
 #include "pch.h"
 #include "config.h"
 #include "func.h"
@@ -46,32 +46,6 @@ namespace QuickBackupX
 		}
 	}
 
-	bool Config::PlayerIsAdmin(string name, string xuid)
-	{
-		map<string, string>::iterator iter = cfg->admins.begin();
-		for (; iter != cfg->backup.end(); ++iter)
-		{
-			if (iter->first == name)
-			{
-				if (iter->second != xuid)
-				{
-					PRWARN(u8"ÕÊº“ " << name << " Admin»®œﬁºÏ≤È ß∞‹: Xuid≤ª∆•≈‰");
-					L_WARNING(string("ÕÊº“ ") + name + " Admin»®œﬁºÏ≤È ß∞‹: Xuid≤ª∆•≈‰");
-					return false;
-				}
-				else return true;
-			}
-			if (iter->second == xuid)
-			{
-				if (iter->first != name)
-					cfg->EditPermissionName(Config::PerType::Admin, xuid, name);
-				return true;
-			}
-		}
-		PRWARN(u8"ÕÊº“ " << name << " Admin»®œﬁºÏ≤È ß∞‹: Œﬁ»®œﬁ");
-		L_WARNING(string("ÕÊº“ ") + name + " Admin»®œﬁºÏ≤È ß∞‹: Œﬁ»®œﬁ");
-		return false;
-	}
 	string Config::getBackupDir()
 	{
 		string dir;
@@ -91,74 +65,65 @@ namespace QuickBackupX
 		return bdir.substr(0, 3);
 	}
 
-	bool Config::getJsonArray(Json::Value root)
+	template<typename retvec>
+	vector<retvec> Config::getConfigArray(string key)
 	{
 		int i = 0;
-		Json::Value abtv = root["AutoBackup_Time"];
-		int abti = abtv.size();
-		if (abti != 0)
+		vector<retvec> rv;
+		Json::Value jv = this->cfgjv[key];
+		int jvi = jv.size();
+		if (jvi != 0)
 		{
-			i = 0;
-			while (i <= abti - 1)
+			while (i <= jvi - 1)
 			{
-				if (abtv[i].empty()) continue;
-				this->abtime.push_back(abtv[i].asString());
+				if (jv[i].empty()) continue;
+				if (typeid(retvec) == typeid(string)) rv.push_back(jv[i].asString());
+				//else if (typeid(retvec) == typeid(int)) rv.push_back(jv[i].asInt());
 				i++;
 			}
 		}
-		Json::Value adminv = root["Admin_Player"];
-		int admini = adminv.size();
-		if (admini != 0)
+		return rv;
+	}
+	map<string, string> Config::getPermission(Config::PerType per)
+	{
+		int i = 0;
+		Json::Value jv;
+		map<string, string> rm;
+		switch (per)
+		{
+		case QuickBackupX::Config::PerType::Admin:
+			jv = this->cfgjv["Admin_Player"];
+			break;
+		case QuickBackupX::Config::PerType::Backup:
+			jv = this->cfgjv["Backup_Player"];
+			break;
+		case QuickBackupX::Config::PerType::Back:
+			jv = this->cfgjv["Back_Player"];
+			break;
+		default:
+			return rm;
+			break;
+		}
+		int jvi = jv.size();
+		if (jvi != 0)
 		{
 			i = 0;
-			while (i <= adminv.size() - 1)
+			while (i <= jvi - 1)
 			{
-				if (adminv[i].empty()) continue;
+				if (jv[i].empty()) continue;
+				if (!jv[i].isObject()) continue;
 				this->admins.insert(
 					pair<string, string>(
-						adminv[i]["Name"].asString(),
-						adminv[i]["Xuid"].asString()
+						jv[i]["Name"].asString(),
+						jv[i]["Xuid"].asString()
 					)
 				);
 				i++;
 			}
 		}
-		Json::Value backup = root["Backup_Player"];
-		Json::Value back = root["Back_Player"];
-		int backupi = backup.size();
-		int backi = back.size();
-		if (backupi != 0)
-		{
-			i = 0;
-			while (i <= backup.size() - 1)
-			{
-				if (backup[i].empty()) continue;
-				this->backup.insert(
-					pair<string, string>(
-						backup[i]["Name"].asString(),
-						backup[i]["Xuid"].asString()
-					)
-				);
-				i++;
-			}
-		}
-		if (backi != 0)
-		{
-			i = 0;
-			while (i <= back.size() - 1)
-			{
-				if (back[i].empty()) continue;
-				this->back.insert(
-					pair<string, string>(
-						back[i]["Name"].asString(),
-						back[i]["Xuid"].asString()
-					)
-				);
-				i++;
-			}
-		}
-		return true;
+		return rm;
 	}
+
 	bool Config::getConfig()
 	{
 		this->cfgjv = getJSON(CONFIGFILE);
@@ -172,16 +137,19 @@ namespace QuickBackupX
 		if (!root.isMember("BackupOutputPath") || !root["BackupOutputPath"].isString()) root["BackupOutputPath"] = "./backup/%Y-%m-%d-%H-%M.zip";
 		if (!root.isMember("EULA")             || !root["EULA"]            .isBool()  ) root["EULA"] = false;
 		if (!root.isMember("ListOutputSize")   || !root["ListOutputSize"]  .isInt()   ) root["ListOutputSize"] = 10;
-		if (!root.isMember("ListOutputCont")   || !root["ListOutputCont"]  .isString()) root["ListOutputCont"] = u8"±∏∑›[%onum%] %date% %time% %size%";
-		if (!root.isMember("ViewOutputCont")   || !root["ViewOutputCont"]  .isString()) root["ViewOutputCont"] = u8"±∏∑›[%onum%] %date% %time% %size% %exer%";
+		if (!root.isMember("ListOutputCont")   || !root["ListOutputCont"]  .isString()) root["ListOutputCont"] = u8"Â§á‰ªΩ[%onum%] %date% %time% %size%";
+		if (!root.isMember("ViewOutputCont")   || !root["ViewOutputCont"]  .isString()) root["ViewOutputCont"] = u8"Â§á‰ªΩ[%onum%] %date% %time% %size% %exer%";
 		if (!root.isMember("Admin_Player")     || !root["Admin_Player"]    .isArray() ) root["Admin_Player"] = example;
 		if (!root.isMember("Backup_Player")    || !root["Backup_Player"]   .isArray() ) root["Backup_Player"] = example;
 		if (!root.isMember("Back_Player")      || !root["Back_Player"]     .isArray() ) root["Back_Player"] = example;
 		if (!root.isMember("AutoBackup_Time")  || !root["AutoBackup_Time"] .isArray() ) root["AutoBackup_Time"][0] = "Hour:Minute";
+		if (!root.isMember("Auto_On_AB")       || !root["Auto_On_AB"]      .isBool()  ) root["Auto_On_AB"] = false;
+		if (!root.isMember("Compression")      || !root["Compression"]     .isInt()   ) root["Compression"] = 60;
+		if (!root.isMember("AB_Max")           || !root["AB_Max"]          .isInt()   ) root["AB_Max"] = 10;
 		SWriteIntoFile(root, CONFIGFILE);
 		if (!root["EULA"].asBool())
 		{
-			PRERR(u8"ƒ˙Œ¥Õ¨“‚EULA,«Î‘⁄" << CONFIGFILE << u8"÷–Ω´\"EULA\": false∏ƒŒ™\"EULA\": true,Ω¯≥Ãº¥Ω´Ω· ¯");
+			PRERR(u8"ÊÇ®Êú™ÂêåÊÑèEULA,ËØ∑Âú®" << CONFIGFILE << u8"‰∏≠Â∞Ü\"EULA\": falseÊîπ‰∏∫\"EULA\": true,ËøõÁ®ãÂç≥Â∞ÜÁªìÊùü");
 			Sleep(3000);
 			exit(-1);
 		}
@@ -192,23 +160,35 @@ namespace QuickBackupX
 		this->lops = root["ListOutputSize"].asInt();
 		this->los = root["ListOutputCont"].asString();
 		this->vos = root["ViewOutputCont"].asString();
-		this->getJsonArray(root);
+		this->aoab = root["Auto_On_AB"].asBool();
+		this->abm = root["AB_Max"].asInt();
+		this->csl = root["Compression"].asInt();
+		this->abtime = this->getConfigArray<string>("AutoBackup_Time");
+		this->admins = this->getPermission(Config::PerType::Admin);
+		this->backup = this->getPermission(Config::PerType::Backup);
+		this->back = this->getPermission(Config::PerType::Back);
+		if (this->csl < 0) this->csl = 0;
+		else if (this->csl > 100) this->csl = 100;
+		if (this->abm <= 0) this->abm = 0;
 		Debug{
-			L_INFO("’˝‘⁄∂¡»°≈‰÷√: ");
+			L_INFO("Ê≠£Âú®ËØªÂèñÈÖçÁΩÆ: ");
 			L_INFO(string("- Debug: ") + (this->debug ? "true" : "false"));
-			L_INFO(string("- Allow_CB: ") + (this->acb ? "true" : "false"));
 			L_INFO(string("- EULA: ") + (this->eula ? "true" : "false"));
+			L_INFO(string("- AB_Max: " + to_string(this->abm)));
+			L_INFO(string("- Allow_CB: ") + (this->acb ? "true" : "false"));
+			L_INFO(string("- Auto_On_AB: ") + (this->aoab ? "true" : "false"));
 			L_INFO(string("- BackupOutputPath: ") + this->bop);
 			L_INFO(string("- ListOutputCont: ") + this->los);
 			L_INFO(string("- ViewOutputCont: ") + this->vos);
 			L_INFO(string("- ListOutputSize: ") + to_string(this->lops));
+			L_INFO(string("- Compression: " + to_string(this->csl)));
 			L_INFO(string("- Admin_Player(") + to_string(this->admins.size()) + ") ");// + this->cfgjv["Admin_Player"].asString());
 			L_INFO(string("- Backup_Player(") + to_string(this->backup.size()) + ") ");// + this->cfgjv["Backup_Player"].asString());
 			L_INFO(string("- Back_Player(") + to_string(this->back.size()) + ") ");// +this->cfgjv["Back_Player"].asString());
 			L_INFO(string("- AutoBackup_Time(") + to_string(this->abtime.size()) + ") ");
 		}
-		L_INFO("≈‰÷√∂¡»°≥…π¶!");
-		PR(u8"≈‰÷√∂¡»°≥…π¶!");
+		L_INFO("ÈÖçÁΩÆËØªÂèñÊàêÂäü!");
+		PR(u8"ÈÖçÁΩÆËØªÂèñÊàêÂäü!");
 		return true;
 	}
 }

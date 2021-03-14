@@ -1,4 +1,4 @@
-// Created by JasonZYT on  2021/02/06
+ï»¿// Created by JasonZYT on  2021/02/06
 #include "logger.h"
 #include "pch.h"
 #include "config.h"
@@ -20,7 +20,7 @@ namespace QuickBackupX
 		{
 			this->fp.open(LOGFILE, ios::app | ios::out);
 			if (!this->fp.is_open()) {
-				PRWARN(u8"ÈÕÖ¾ÎÄ¼þ´ò¿ªÊ§°Ü :(");
+				PRWARN(u8"æ—¥å¿—æ–‡ä»¶æ‰“å¼€å¤±è´¥ :(");
 				return false;
 			}
 			else this->status = true;
@@ -38,7 +38,7 @@ namespace QuickBackupX
 			}
 			this->fp << "============================ Plugin injected ============================" << endl
 				<< "Version: QuickBackupX " << QBXVERSION << " " << QBXVERSIONTAG << endl
-				<< "Compile time: " << __DATE__ << "  " << __TIME__ << endl;
+				<< "Build time: " << __DATE__ << "  " << __TIME__ << endl;
 			return true;
 		}
 		return false;

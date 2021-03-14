@@ -1,4 +1,4 @@
-// Created by Jasonzyt on 2021/02/26
+ï»¿// Created by Jasonzyt on 2021/02/26
 #include "autobackup.h"
 #pragma warning(disable:4996)
 #undef min
@@ -7,7 +7,7 @@ using namespace std;
 
 namespace QuickBackupX
 {
-	AutoBackup::AutoBackup()
+	bool AutoBackup::Init()
 	{
 		vector<string>::iterator iter = cfg->abtime.begin();
 		for (; iter != cfg->abtime.end(); iter++)
@@ -20,30 +20,40 @@ namespace QuickBackupX
 				int min = atoi(string(ham[1]).c_str());
 				if (hour >= 24) continue;
 				if (min >= 60) continue;
-				vector<int> timevec;
-				timevec.push_back(hour);
-				timevec.push_back(min);
-				this->time.push_back(timevec);
+				tm time;
+				time.tm_hour = hour;
+				time.tm_min = min;
+				this->time.push_back(mktime(&time));
 			}
 		}
+		return true;
 	}
 
 	bool AutoBackup::Run()
 	{
-		vector<vector<int>>::iterator iter = this->time.begin();
-		for (; iter != this->time.end(); iter++)
+		if (this->is_on)
 		{
-			vector<int> vec = (*iter);
-			if (vec[0] == this->getLocalHour())
+			vector<time_t>::iterator iter = this->time.begin();
+			for (; iter != this->time.end(); iter++)
 			{
-				if (vec[1] == this->getLocalMinute())
+				tm time;
+				time.tm_hour = this->getLocalHour();
+				time.tm_min = this->getLocalMinute();
+				time_t timt = (*iter);
+				time_t now = mktime(&time);
+				if (timt == now)
 				{
-					L_INFO("Ö´ÐÐ×Ô¶¯±¸·Ý...");
-					Backup* bak = new Backup;
 					Backup::Executor exer;
 					exer.type = Backup::Executor::Type::AutoBackup;
+					L_INFO("æ‰§è¡Œè‡ªåŠ¨å¤‡ä»½...");
+					if (rec->GetTotal(AutoBak_Type) >= cfg->abm)
+					{
+						rec->GetOldestRecord(AutoBak_Type)->Delete(exer);
+					}
+					Backup* bak = new Backup;
 					thread runbak(&Backup::Make, bak, exer);
 					runbak.detach();
+					//delete bak;
 					return true;
 				}
 			}

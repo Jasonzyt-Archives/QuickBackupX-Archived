@@ -3,9 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+#BDX SDK
 QuickBackupX-BDX/bdx/
-*.bat
-*.del
+#Bundle Libraey Files
+QuickBackupX/bundle/deps/
 
 # User-specific files
 *.rsuser

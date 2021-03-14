@@ -136,6 +136,8 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>C:\Users\Administrator\Desktop\QuickBackupX\QuickBackupX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4828</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,7 +149,9 @@
   <ItemGroup>
     <ClCompile Include="..\QuickBackupX\autobackup.cpp" />
     <ClCompile Include="..\QuickBackupX\backup.cpp" />
+    <ClCompile Include="..\QuickBackupX\bundle\bundle.cpp" />
     <ClCompile Include="..\QuickBackupX\config.cpp" />
+    <ClCompile Include="..\QuickBackupX\file.cpp" />
     <ClCompile Include="..\QuickBackupX\func.cpp" />
     <ClCompile Include="..\QuickBackupX\json.cpp" />
     <ClCompile Include="..\QuickBackupX\json\json_reader.cpp" />
@@ -157,6 +161,7 @@
     <ClCompile Include="..\QuickBackupX\md5.cpp" />
     <ClCompile Include="..\QuickBackupX\pch.cpp" />
     <ClCompile Include="..\QuickBackupX\properties.cpp" />
+    <ClCompile Include="..\QuickBackupX\qbzip.cpp" />
     <ClCompile Include="..\QuickBackupX\zip\unzip.cpp" />
     <ClCompile Include="..\QuickBackupX\zip\zip.cpp" />
     <ClCompile Include="mod.cpp" />
@@ -165,8 +170,23 @@
     <Library Include="..\QuickBackupX\chakra.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\QuickBackupX\autobackup.h" />
+    <ClInclude Include="..\QuickBackupX\backup.h" />
     <ClInclude Include="..\QuickBackupX\bds.hpp" />
+    <ClInclude Include="..\QuickBackupX\bundle\bundle.h" />
+    <ClInclude Include="..\QuickBackupX\config.h" />
+    <ClInclude Include="..\QuickBackupX\file.h" />
+    <ClInclude Include="..\QuickBackupX\func.h" />
+    <ClInclude Include="..\QuickBackupX\json.h" />
     <ClInclude Include="..\QuickBackupX\json\json.h" />
+    <ClInclude Include="..\QuickBackupX\logger.h" />
+    <ClInclude Include="..\QuickBackupX\md5.h" />
+    <ClInclude Include="..\QuickBackupX\pch.h" />
+    <ClInclude Include="..\QuickBackupX\properties.h" />
+    <ClInclude Include="..\QuickBackupX\qbzip.h" />
+    <ClInclude Include="..\QuickBackupX\zip\unzip.h" />
+    <ClInclude Include="..\QuickBackupX\zip\zip.h" />
+    <ClInclude Include="..\QuickBackupX\zip\ZipDefine.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\QuickBackupX\json\json_valueiterator.inl" />

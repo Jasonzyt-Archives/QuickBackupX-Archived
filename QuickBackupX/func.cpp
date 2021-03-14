@@ -1,4 +1,4 @@
-// Created by JasonZYT on 2021/02/05
+ï»¿// Created by JasonZYT on 2021/02/05
 #include "func.h"
 #include "logger.h"
 #include "config.h"
@@ -68,11 +68,11 @@ namespace QuickBackupX
 		return filesystem::path(str).u8string();
 	}
 	/// <summary>
-	/// ½«×Ö·û´®ÒÔÒ»¸ö×Ö·û·Ö¶Î
+	/// å°†å­—ç¬¦ä¸²ä»¥ä¸€ä¸ªå­—ç¬¦åˆ†æ®µ
 	/// </summary>
-	/// <param name="s">ĞèÒª·Ö¶ÎµÄ×Ö·û´®</param>
-	/// <param name="flag">·Ö¶ÎµÄ×Ö·û</param>
-	/// <returns>std::vector ·Ö¶ÎµÄ½á¹û</returns>
+	/// <param name="s">éœ€è¦åˆ†æ®µçš„å­—ç¬¦ä¸²</param>
+	/// <param name="flag">åˆ†æ®µçš„å­—ç¬¦</param>
+	/// <returns>std::vector åˆ†æ®µçš„ç»“æœ</returns>
 	vector<string> split(string s, const char flag) 
 	{
 		vector<string> rv;
@@ -143,61 +143,61 @@ namespace QuickBackupX
 		switch (in)
 		{
 		case ZR_OK:
-			return "Ñ¹Ëõ³É¹¦";
+			return "å‹ç¼©æˆåŠŸ";
 			break;
 		case ZR_NOFILE:
-			return "ÕÒ²»µ½ĞèÒªÑ¹ËõµÄÎÄ¼ş";
+			return "æ‰¾ä¸åˆ°éœ€è¦å‹ç¼©çš„æ–‡ä»¶";
 			break;
 		case ZR_NODUPH:
-			return "ÎŞ·¨¸´ÖÆ¾ä±ú";
+			return "æ— æ³•å¤åˆ¶å¥æŸ„";
 			break;
 		case ZR_NOALLOC:
-			return "Î´ÄÜ·ÖÅäÄ³Ğ©×ÊÔ´";
+			return "æœªèƒ½åˆ†é…æŸäº›èµ„æº";
 			break;
 		case ZR_WRITE:
-			return "Ğ´ÈëÎÄ¼şÊ±³öÏÖ´íÎó";
+			return "å†™å…¥æ–‡ä»¶æ—¶å‡ºç°é”™è¯¯";
 			break;
 		case ZR_NOTFOUND:
-			return "ÔÚÑ¹ËõÎÄ¼şÖĞÕÒ²»µ½¸ÃÎÄ¼ş";
+			return "åœ¨å‹ç¼©æ–‡ä»¶ä¸­æ‰¾ä¸åˆ°è¯¥æ–‡ä»¶";
 			break;
 		case ZR_MORE:
-			return "»¹ÓĞ¸ü¶àÊı¾İÒª½âÑ¹Ëõ";
+			return "è¿˜æœ‰æ›´å¤šæ•°æ®è¦è§£å‹ç¼©";
 			break;
 		case ZR_CORRUPT:
-			return "Ñ¹ËõÎÄ¼şÒÑËğ»µ»ò²»ÊÇZIPÑ¹ËõÎÄ¼ş";
+			return "å‹ç¼©æ–‡ä»¶å·²æŸåæˆ–ä¸æ˜¯ZIPå‹ç¼©æ–‡ä»¶";
 			break;
 		case ZR_READ:
-			return "¶ÁÈ¡ÎÄ¼şÊ±³öÏÖ³£¹æ´íÎó";
+			return "è¯»å–æ–‡ä»¶æ—¶å‡ºç°å¸¸è§„é”™è¯¯";
 			break;
 		case ZR_PASSWORD:
-			return "Ã»ÓĞ»ñµÃÕıÈ·µÄÃÜÂëÀ´½âÑ¹ËõÎÄ¼ş";
+			return "æ²¡æœ‰è·å¾—æ­£ç¡®çš„å¯†ç æ¥è§£å‹ç¼©æ–‡ä»¶";
 			break;
 		case ZR_ARGS:
-			return "²ÎÊı´íÎó";
+			return "å‚æ•°é”™è¯¯";
 			break;
 		case ZR_NOTMMAP:
-			return "³¢ÊÔZipGetMemory µ«ÕâÖ»ÊÊÓÃÓÚMMap ZIPÎÄ¼ş";
+			return "å°è¯•ZipGetMemory ä½†è¿™åªé€‚ç”¨äºMMap ZIPæ–‡ä»¶";
 			break;
 		case ZR_MEMSIZE:
-			return "ÄÚ´æ²»×ã";
+			return "å†…å­˜ä¸è¶³";
 			break;
 		case ZR_FAILED:
-			return "µ÷ÓÃ´Ëº¯ÊıÊ±¸Ã²Ù×÷ÒÑÊ§°Ü";
+			return "è°ƒç”¨æ­¤å‡½æ•°æ—¶è¯¥æ“ä½œå·²å¤±è´¥";
 			break;
 		case ZR_ENDED:
-			return "Ñ¹ËõÎÄ¼ş´´½¨ÒÑ¹Ø±Õ";
+			return "å‹ç¼©æ–‡ä»¶åˆ›å»ºå·²å…³é—­";
 			break;
 		case ZR_MISSIZE:
-			return "ÏÔÊ¾µÄÊäÈëÎÄ¼ş´óĞ¡´íÎó";
+			return "æ˜¾ç¤ºçš„è¾“å…¥æ–‡ä»¶å¤§å°é”™è¯¯";
 			break;
 		case ZR_PARTIALUNZ:
-			return "ÎÄ¼şÒÑ¾­²¿·Ö½âÑ¹Ëõ";
+			return "æ–‡ä»¶å·²ç»éƒ¨åˆ†è§£å‹ç¼©";
 			break;
 		case ZR_ZMODE:
-			return "³¢ÊÔ»ìºÏ´´½¨/´ò¿ªÑ¹ËõÎÄ¼ş";
+			return "å°è¯•æ··åˆåˆ›å»º/æ‰“å¼€å‹ç¼©æ–‡ä»¶";
 			break;
 		default:
-			return "Î´¶¨ÒåµÄ±êÊ¶·û";
+			return "æœªå®šä¹‰çš„æ ‡è¯†ç¬¦";
 			break;
 		}
 	}
@@ -235,11 +235,7 @@ namespace QuickBackupX
 		{
 			if (iter->first == pname)
 			{
-				if (iter->second != pxuid)
-				{
-					L_WARNING(string("Íæ¼Ò ") + pname + " AdminÈ¨ÏŞ¼ì²éÊ§°Ü: Xuid²»Æ¥Åä");
-					return false;
-				}
+				if (iter->second != pxuid) return false;
 				else return true;
 			}
 			if (iter->second == pxuid)
@@ -249,15 +245,22 @@ namespace QuickBackupX
 				return true;
 			}
 		}
-		L_WARNING(string("Íæ¼Ò ") + pname + " AdminÈ¨ÏŞ¼ì²éÊ§°Ü: ÎŞÈ¨ÏŞ");
+		return false;
 	}
-	bool TellAdmin(std::string msg)
+	bool Is_Admin(Backup::Executor exer)
+	{
+		if (exer.type == Player_Type)
+			return Is_Admin(exer.pname, exer.pxuid);
+		return false;
+	}
+	bool TellAdmin(string msg, string except)
 	{
 		map<string, string>::iterator iter = cfg->admins.begin();
 		for (; iter != cfg->admins.end(); ++iter)
 		{
+			if (except == iter->second) continue;
 			if (PlayerIsOnline[iter->first])
-				sendText(iter->first, msg);
+				sendText(iter->first, string("Â§e[QuickBackupX] ") + msg);
 		}
 		return true;
 	}

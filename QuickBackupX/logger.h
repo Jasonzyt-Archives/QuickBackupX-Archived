@@ -1,4 +1,4 @@
-// Created by JasonZYT on 2021/02/06
+﻿// Created by JasonZYT on 2021/02/06
 #pragma once
 #ifndef QBX_LOGGER_INCLUDED
 #define QBX_LOGGER_INCLUDED

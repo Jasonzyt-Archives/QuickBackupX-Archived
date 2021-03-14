@@ -1,4 +1,4 @@
-#ifndef MD5_H
+﻿#ifndef MD5_H
 #define MD5_H
 
 #ifndef _CRT_SECURE_NO_WARNINGS

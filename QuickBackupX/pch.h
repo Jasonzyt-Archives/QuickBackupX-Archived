@@ -1,21 +1,23 @@
-// Created by twoone3
+ï»¿// Created by twoone3
 #pragma once
+#define __QUICKBACKUX__
 #ifndef PCH_INCLUDED
 #define WIN32_LEAN_AND_MEAN
 #define PCH_INCLUDED
-// Windows Í·ÎÄ¼ş
+// Windows å¤´æ–‡ä»¶
 #include <windows.h>
-// C++ ±ê×¼¿â
+// C++ æ ‡å‡†åº“
 #include <iostream>
 #include <thread>
 #include <string>
-#include <filesystem>
 #include <fstream>
 #include <map>
 #include <vector>
 #include <sstream>
 #include <regex>
-// ÆäËû API Í·ÎÄ¼ş
+#include <mutex>
+#include <filesystem>
+// å…¶ä»– API å¤´æ–‡ä»¶
 #include <stdio.h>
 #include <urlmon.h>
 #include <time.h>
@@ -28,12 +30,12 @@ using Ptr = Type*;
 
 namespace QuickBackupX
 {
-	// Àà/½á¹¹ÉùÃ÷
+	// ç±»/ç»“æ„å£°æ˜
 	class BRecJson;
 	class Config;
 	class Logger;
 	struct Player;
-	// Íâ²¿±äÁ¿
+	// å¤–éƒ¨å˜é‡
 	extern BRecJson* rec;
 	extern Config* cfg;
 	extern Logger* log;
@@ -43,10 +45,10 @@ namespace QuickBackupX
 	extern std::map<std::string, Player*> PlayerUuid;
 	extern std::map<std::string, bool> PlayerIsOnline;
 	extern std::map<unsigned, bool> fids;
-	// ³£Á¿¶¨Òå
-	const std::string QBXVERSIONTAG = "Beta";
-	const std::string QBXVERSION    = "4.1.3";
-	const std::string TEMPDIR       = "./QuickBackupX/LEVEL_TEMP/";
+	// å¸¸é‡å®šä¹‰
+	const std::string QBXVERSIONTAG = "Alpha";
+	const std::string QBXVERSION    = "4.1.4";
+	const std::string BACKUPDIR     = "./QuickBackupX/BACKUP_TEMP/";
 	const std::string RESUMEDIR     = "./QuickBackupX/RESUME_TEMP/";
 	const std::string EULAFILE      = "./QuickBackupX/EULA.txt";
 	const std::string LOGFILE       = "./QuickBackupX/QBX.log";
@@ -82,6 +84,7 @@ ret name::_hook(__VA_ARGS__)
 #define _U(x) u8 ## x
 #define offset(type, ptr) (*reinterpret_cast<type*>(ptr))
 #define Debug if (QBX::cfg->debug)
+#define SC(type, val) static_cast<type>(val)
 //#define offset(type,ptr) (*(type*)(ptr))
 
 #endif

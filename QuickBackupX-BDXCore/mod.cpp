@@ -1,4 +1,4 @@
-// Created by JasonZYT on 2021/02/14
+ï»¿// Created by JasonZYT on 2021/02/14
 /*
    ___        _      _    ____             _              __  __
   / _ \ _   _(_) ___| | _| __ )  __ _  ___| | ___   _ _ __\ \/ /
@@ -16,9 +16,11 @@
 #include "json/json.h"
 #include "bds.hpp"
 #include "autobackup.h"
+#include "qbzip.h"
 #include <shellapi.h>
 #pragma warning(disable:4996)
 
+#define Tell_P(...) sendText(exer.pname, __VA_ARGS__)
 #define If_Console if (exer.type == Console_Type)
 #define If_Player  if (exer.type == Player_Type)
 
@@ -36,13 +38,11 @@ namespace QuickBackupX
 	Logger* log = new Logger;
 	Config* cfg = new Config;
 	BRecJson* rec = new BRecJson;
+	AutoBackup* ab = new AutoBackup;
 
-	/*
-		const char* homeProfile = "USERPROFILE";
-		char homePath[1024] = { 0 };
-		unsigned int pathSize = GetEnvironmentVariableA(homeProfile, homePath, 1024);
-		string addir = string(homePath) + "\\";
-	*/
+	void dll_init();
+	void dll_exit();
+	void RunAutoBackup();
 
 	void dll_init()
 	{
@@ -59,27 +59,29 @@ namespace QuickBackupX
 		{
 			if (filesystem::create_directory(filesystem::path("./QuickBackupX/")))
 			{
-				PR(u8"´´½¨QuickBackupXÎÄ¼ş¼Ğ³É¹¦!");
-				L_INFO("´´½¨QuickBackupXÎÄ¼ş¼Ğ³É¹¦!");
+				PR(u8"åˆ›å»ºQuickBackupXæ–‡ä»¶å¤¹æˆåŠŸ!");
+				L_INFO("åˆ›å»ºQuickBackupXæ–‡ä»¶å¤¹æˆåŠŸ!");
 			}
 			else
 			{
-				PRERR(u8"´´½¨QuickBackupXÎÄ¼ş¼ĞÊ§°Ü!");
-				PRERR(u8"½ø³Ì¼´½«ÍË³ö");
+				PRERR(u8"åˆ›å»ºQuickBackupXæ–‡ä»¶å¤¹å¤±è´¥!");
+				PRERR(u8"è¿›ç¨‹å³å°†é€€å‡º");
 				Sleep(3000);
 				throw 100;
 			}
 		}
+		// å…¨å±€å¯¹è±¡åˆå§‹åŒ–
 		log->Open();
 		log->Start();
 		cfg->getConfig();
 		rec->blist = rec->ListRecord();
+		ab->Init();
 		ofstream eula;
 		eula.open(EULAFILE, ios::app | ios::out);
-		L_INFO("´´½¨EULA.txt...");
+		L_INFO("åˆ›å»ºEULA.txt...");
 		if (!eula.is_open())
 		{
-			L_ERROR(string("ÎŞ·¨´´½¨ÎÄ¼ş: ") + EULAFILE);
+			L_ERROR(string("æ— æ³•åˆ›å»ºæ–‡ä»¶: ") + EULAFILE);
 			Sleep(3000);
 			throw 102;
 			return;
@@ -88,34 +90,34 @@ namespace QuickBackupX
 u8R"(QuickBackupX  EULA
 Copyright (C)2020-2021 JasonZYT
 
-*Ê¹ÓÃQuickBackupX²å¼ş(ÒÔÏÂ¼ò³Æ¡°±¾²å¼ş¡±)Ç°£¬ÄúĞèÒªÏÈÔÚconfig.jsonÖĞµÄ"EULA": false¸ü¸ÄÎª"EULA": true±íÊ¾ÄúÒÑÔÄ¶Á²¢Í¬ÒâEULA(×îÖÕÓÃ»§Ğí¿ÉĞ­Òé)
-ÉÏ´Î¸üĞÂÈÕÆÚ: 2021Äê2ÔÂ23ÈÕ
+*ä½¿ç”¨QuickBackupXæ’ä»¶(ä»¥ä¸‹ç®€ç§°â€œæœ¬æ’ä»¶â€)å‰ï¼Œæ‚¨éœ€è¦å…ˆåœ¨config.jsonä¸­çš„"EULA": falseæ›´æ”¹ä¸º"EULA": trueè¡¨ç¤ºæ‚¨å·²é˜…è¯»å¹¶åŒæ„EULA(æœ€ç»ˆç”¨æˆ·è®¸å¯åè®®)
+ä¸Šæ¬¡æ›´æ–°æ—¥æœŸ: 2021å¹´2æœˆ23æ—¥
 
-1. ÃâÔğÉùÃ÷ 
-  1.1 ÄúÀí½â²¢Í¬Òâ£¬ÔÚÊ¹ÓÃ±¾²å¼şµÄ¹ı³ÌÖĞÔì³É¼ÆËã»úµÄÈÎºÎËğ»µ(°üÀ¨µ«²»ÏŞÓÚ¼ÆËã»úÈíÓ²¼şÉÏµÄËğ»µ)±¾²å¼şµÄ×÷Õß¾ù²»³Ğµ£ÔğÈÎ¡£
-  1.2 ÄúÊ¹ÓÃÈÎºÎ±¾²å¼şµÄÑÜÉúÈí¼ş(¶ş´Î¿ª·¢Èí¼ş¡¢Ê¹ÓÃÁË±¾²å¼şÔ´´úÂëµÄÈí¼ş/²å¼ş)Ëùµ¼ÖÂµÄÈÎºÎ¼ÆËã»úËğ»µ(°üÀ¨µ«²»ÏŞÓÚ¼ÆËã»ú²¡¶¾¡¢ÎÄ¼şËğ»µ)ºÍ¼ÆËã»ú×ÊÁÏÎÄ¼ş(°üÀ¨µ«²»ÏŞÓÚÈí¼ş¶ÁÈ¡ÒşË½×ÊÁÏ)Ğ¹Â©¡£
-2. ²å¼şËµÃ÷
-  2.1 ±¾²å¼ş×ñÑ­GPLv3.0Ğ­Òé¿ªÔ´£¬ÈÎºÎÊ¹ÓÃÁË±¾²å¼şÔ­´´µÄÔ´´úÂë(±¾²å¼şËùÊ¹ÓÃµÄµÚÈı·½¿â³ıÍâ)µÄÈí¼ş/²å¼ş¶¼Ó¦¿ª·ÅÔ´´úÂë(ÒÔÏÂ¼ò³Æ¡°¿ªÔ´¡±)²¢×¢Ã÷Ô­×÷Õß¡£
-  2.2 ±¾²å¼şËùÊ¹ÓÃµÄµÚÈı·½¿â£¬²å¼ş×÷Õß¾ùÒÑÁË½âÏà¹ØĞ­Òé£¬ÇÒÓë±¾Ğ­ÒéÎŞ¹Ø¡£
-  2.3 ÈÎºÎÈË¡¢×éÖ¯¡¢ÍÅÌå²»µÃÔÚ²å¼ş(Ô´´úÂë)ÖĞ¼ÓÈë¶ÔÓÃ»§¼ÆËã»úÓĞº¦µÄ³ÌĞò(°üÀ¨µ«²»ÏŞÓÚ¼ÆËã»ú²¡¶¾³ÌĞò)ºó·¢²¼¡£
-  2.4 ÈÎºÎÈË¡¢×éÖ¯¡¢ÍÅÌå²»µÃ½«´Ë²å¼ş×÷ÎªÓ¯ÀûÊÖ¶Î£¬ÔÚ»¥ÁªÍøÉÏÏúÊÛ±¾²å¼ş¡£
-  2.5 ÈÎºÎÈË¡¢×éÖ¯¡¢ÍÅÌå²»µÃÔÚÎ´¾­²å¼şÔ­×÷Õß(JasonZYT)µÄÔÊĞíÏÂÉÌÓÃ±¾²å¼ş¡£
-  2.6 ÈÎºÎÈË¡¢×éÖ¯¡¢ÍÅÌå²»µÃÆÆ½â±¾²å¼ş¡£
-  2.7 ²å¼şÔ­×÷Õß±£Áô¶Ô±¾²å¼şµÄËùÓĞÈ¨Àû¡£
-  2.8 ±¾²å¼ş°æÈ¨ËùÓĞÕßÎª²å¼şÔ­×÷Õß¡£
-  2.9 ÆÆ½â¡¢¶ş´Î´´×÷±¾²å¼şËùÔì³ÉµÄÒ»ÇĞºó¹ûÓÉÆÆ½âÕß¡¢¶ş´Î´´×÷Õß³Ğµ£¡£
+1. å…è´£å£°æ˜ 
+  1.1 æ‚¨ç†è§£å¹¶åŒæ„ï¼Œåœ¨ä½¿ç”¨æœ¬æ’ä»¶çš„è¿‡ç¨‹ä¸­é€ æˆè®¡ç®—æœºçš„ä»»ä½•æŸå(åŒ…æ‹¬ä½†ä¸é™äºè®¡ç®—æœºè½¯ç¡¬ä»¶ä¸Šçš„æŸå)æœ¬æ’ä»¶çš„ä½œè€…å‡ä¸æ‰¿æ‹…è´£ä»»ã€‚
+  1.2 æ‚¨ä½¿ç”¨ä»»ä½•æœ¬æ’ä»¶çš„è¡ç”Ÿè½¯ä»¶(äºŒæ¬¡å¼€å‘è½¯ä»¶ã€ä½¿ç”¨äº†æœ¬æ’ä»¶æºä»£ç çš„è½¯ä»¶/æ’ä»¶)æ‰€å¯¼è‡´çš„ä»»ä½•è®¡ç®—æœºæŸå(åŒ…æ‹¬ä½†ä¸é™äºè®¡ç®—æœºç—…æ¯’ã€æ–‡ä»¶æŸå)å’Œè®¡ç®—æœºèµ„æ–™æ–‡ä»¶(åŒ…æ‹¬ä½†ä¸é™äºè½¯ä»¶è¯»å–éšç§èµ„æ–™)æ³„æ¼ã€‚
+2. æ’ä»¶è¯´æ˜
+  2.1 æœ¬æ’ä»¶éµå¾ªGPLv3.0åè®®å¼€æºï¼Œä»»ä½•ä½¿ç”¨äº†æœ¬æ’ä»¶åŸåˆ›çš„æºä»£ç (æœ¬æ’ä»¶æ‰€ä½¿ç”¨çš„ç¬¬ä¸‰æ–¹åº“é™¤å¤–)çš„è½¯ä»¶/æ’ä»¶éƒ½åº”å¼€æ”¾æºä»£ç (ä»¥ä¸‹ç®€ç§°â€œå¼€æºâ€)å¹¶æ³¨æ˜åŸä½œè€…ã€‚
+  2.2 æœ¬æ’ä»¶æ‰€ä½¿ç”¨çš„ç¬¬ä¸‰æ–¹åº“ï¼Œæ’ä»¶ä½œè€…å‡å·²äº†è§£ç›¸å…³åè®®ï¼Œä¸”ä¸æœ¬åè®®æ— å…³ã€‚
+  2.3 ä»»ä½•äººã€ç»„ç»‡ã€å›¢ä½“ä¸å¾—åœ¨æ’ä»¶(æºä»£ç )ä¸­åŠ å…¥å¯¹ç”¨æˆ·è®¡ç®—æœºæœ‰å®³çš„ç¨‹åº(åŒ…æ‹¬ä½†ä¸é™äºè®¡ç®—æœºç—…æ¯’ç¨‹åº)åå‘å¸ƒã€‚
+  2.4 ä»»ä½•äººã€ç»„ç»‡ã€å›¢ä½“ä¸å¾—å°†æ­¤æ’ä»¶ä½œä¸ºç›ˆåˆ©æ‰‹æ®µï¼Œåœ¨äº’è”ç½‘ä¸Šé”€å”®æœ¬æ’ä»¶ã€‚
+  2.5 ä»»ä½•äººã€ç»„ç»‡ã€å›¢ä½“ä¸å¾—åœ¨æœªç»æ’ä»¶åŸä½œè€…(JasonZYT)çš„å…è®¸ä¸‹å•†ç”¨æœ¬æ’ä»¶ã€‚
+  2.6 ä»»ä½•äººã€ç»„ç»‡ã€å›¢ä½“ä¸å¾—ç ´è§£æœ¬æ’ä»¶ã€‚
+  2.7 æ’ä»¶åŸä½œè€…ä¿ç•™å¯¹æœ¬æ’ä»¶çš„æ‰€æœ‰æƒåˆ©ã€‚
+  2.8 æœ¬æ’ä»¶ç‰ˆæƒæ‰€æœ‰è€…ä¸ºæ’ä»¶åŸä½œè€…ã€‚
+  2.9 ç ´è§£ã€äºŒæ¬¡åˆ›ä½œæœ¬æ’ä»¶æ‰€é€ æˆçš„ä¸€åˆ‡åæœç”±ç ´è§£è€…ã€äºŒæ¬¡åˆ›ä½œè€…æ‰¿æ‹…ã€‚
 )";
 		eula.close();
 		if (!filesystem::exists(BACKUPRECFILE))
 		{
-			PR(u8"Î´ÕÒµ½±¸·İ¼ÇÂ¼Json: " << BACKUPRECFILE);
+			PR(u8"æœªæ‰¾åˆ°å¤‡ä»½è®°å½•Json: " << BACKUPRECFILE);
 			ofstream fp;
 			fp.open(BACKUPRECFILE, ios::app | ios::out);
-			PR(u8"Õı³¢ÊÔ´´½¨±¸·İ¼ÇÂ¼Json...");
+			PR(u8"æ­£å°è¯•åˆ›å»ºå¤‡ä»½è®°å½•Json...");
 			if (!fp.is_open())
 			{
-				PRERR(u8"ÎŞ·¨´´½¨ÎÄ¼ş: " << BACKUPRECFILE << u8" Çë³¢ÊÔÊÖ¶¯´´½¨");
-				L_ERROR(string("ÎŞ·¨´´½¨ÎÄ¼ş: ") + BACKUPRECFILE);
+				PRERR(u8"æ— æ³•åˆ›å»ºæ–‡ä»¶: " << BACKUPRECFILE << u8" è¯·å°è¯•æ‰‹åŠ¨åˆ›å»º");
+				L_ERROR(string("æ— æ³•åˆ›å»ºæ–‡ä»¶: ") + BACKUPRECFILE);
 				Sleep(3000);
 				throw 102;
 				return;
@@ -125,35 +127,52 @@ Copyright (C)2020-2021 JasonZYT
 		}
 		if (!filesystem::exists(cfg->getBackupDir()))
 		{
-			if (filesystem::create_directory(filesystem::path(cfg->getBackupDir())))
+			if (filesystem::create_directories(filesystem::path(cfg->getBackupDir())))
 			{
-				L_INFO(string("´´½¨ ") + cfg->getBackupDir() + " ÎÄ¼ş¼Ğ³É¹¦!");
+				L_INFO(string("åˆ›å»º ") + cfg->getBackupDir() + " æ–‡ä»¶å¤¹æˆåŠŸ!");
 			}
 			else
 			{
-				PRERR(u8"´´½¨ " << cfg->getBackupDir() << " ÎÄ¼ş¼ĞÊ§°Ü! Çë³¢ÊÔÊÖ¶¯´´½¨");
-				L_INFO(string("´´½¨ ") + cfg->getBackupDir() + " ÎÄ¼ş¼ĞÊ§°Ü!!!");
+				PRERR(u8"åˆ›å»º " << cfg->getBackupDir() << " æ–‡ä»¶å¤¹å¤±è´¥! è¯·å°è¯•æ‰‹åŠ¨åˆ›å»º");
+				L_INFO(string("åˆ›å»º ") + cfg->getBackupDir() + " æ–‡ä»¶å¤¹å¤±è´¥!!!");
 				Sleep(3000);
 				throw 100;
 			}
 		}
+		ab->is_on = cfg->aoab;
+		thread thab(&RunAutoBackup);
+		thab.detach();
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+		PR(u8"æ„Ÿè°¢ TISUnion(https://www.github.com/TISUnion/QuickBackupM) çš„çµæ„Ÿæ”¯æŒ");
+		PR(u8"æ„Ÿè°¢ Bundleåº“(https://github.com/r-lyeh-archived/bundle) çš„ä»£ç æ”¯æŒ");
+		PR(u8"æ„Ÿè°¢ JsonCPPåº“(https://github.com/open-source-parsers/jsoncpp) çš„ä»£ç æ”¯æŒ");
+		PR(u8"æ„Ÿè°¢ OpenSSLåº“(https://github.com/openssl/openssl) çš„ä»£ç æ”¯æŒ");
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-		PR(u8"¸ĞĞ» TISUnion(https://www.github.com/TISUnion/QuickBackupM) µÄÁé¸ĞÖ§³Ö");
-		PR(u8"¸ĞĞ» ZipUtils¿â(https://www.codeproject.com/Articles/7530/Zip-Utils-Clean-Elegant-Simple-Cplusplus-Win) µÄ´úÂëÖ§³Ö");
-		PR(u8"¸ĞĞ» JsonCPP¿â(https://github.com/open-source-parsers/jsoncpp) µÄ´úÂëÖ§³Ö");
-		PR(u8"¸ĞĞ» OpenSSL¿â(https://github.com/openssl/openssl) µÄ´úÂëÖ§³Ö");
-		PR(u8"²å¼şÒÑÆô¶¯(Version " << QBXVERSION << u8" #" << QBXVERSIONTAG << u8"##BDXC&BDX Edition#)(GitHub Repository:https://www.github.com/ST-SKYTown/QuickBackupX)");
+		PR(u8"æ’ä»¶å·²å¯åŠ¨(Version " << QBXVERSION << u8" #" << QBXVERSIONTAG << u8"##BDXC&BDX Edition#)(GitHub Repository:https://www.github.com/ST-SKYTown/QuickBackupX)");
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
 	}
 
 	void dll_exit()
 	{
-		L_INFO("Îö¹¹È«¾Ö¶ÔÏó...(Äã¶ÔÏó,ÎŞÁË/doge)");
+		L_INFO("ææ„å…¨å±€å¯¹è±¡...(ä½ å¯¹è±¡,æ— äº†/doge)");
 		delete log;
 		delete rec;
 		delete cfg;
+		delete ab;
+	}
+
+	void RunAutoBackup()
+	{
+		L_INFO("AutoBackupçº¿ç¨‹å¼€å§‹...");
+		while (true)
+		{
+			ab->Run(); // æ¯åˆ†é’Ÿè¯•å›¾æ‰§è¡Œä¸€æ¬¡
+			this_thread::sleep_for(chrono::milliseconds(60000));
+		}
 	}
 	
+#pragma region Command_Parse
+
 	enum class QBCMDT : int
 	{
 		ERRPAR6 = -6,
@@ -170,12 +189,13 @@ Copyright (C)2020-2021 JasonZYT
 		Help,
 		Del,
 		Reload,
-		Back
+		Back,
+		Auto
 	};
 
 	enum class QBCMDParam : int
 	{
-		string, _int, _bool, null
+		string, _int, _bool, null, on_off, time
 	};
 	
 	struct QBCMD
@@ -186,25 +206,20 @@ Copyright (C)2020-2021 JasonZYT
 		{
 			string param = params[pnum];
 			regex reg("^([0-9]+)$");
+			regex reg1("^(([1-9]{1})|([0-1][0-9])|([1-2][0-3])):([0-5][0-9])$");
 			if (regex_match(param, reg))
 				return QBCMDParam::_int;
-			if (param == "true" || param == "false")
+			else if (param == "true" || param == "false")
 				return QBCMDParam::_bool;
-			if (param == "")
+			else if (param == "on" || param == "off")
+				return QBCMDParam::on_off;
+			else if (regex_match(param,reg1))
+				return QBCMDParam::time;
+			else if (param == "")
 				return QBCMDParam::null;
 			return QBCMDParam::string;
 		}
 	};
-
-	void RunAutoBackup()
-	{
-		AutoBackup* ab = new AutoBackup;
-		while (true)
-		{
-			ab->Run(); // Ã¿·ÖÖÓÊÔÍ¼Ö´ĞĞÒ»´Î
-			this_thread::sleep_for(chrono::milliseconds(60000));
-		}
-	}
 
 	QBCMD CMDCheck(string cmd, Backup::Executor exer)
 	{
@@ -213,7 +228,7 @@ Copyright (C)2020-2021 JasonZYT
 		int paramsize = params.size();
 		if (paramsize == 0)
 		{
-			rv.type = QBCMDT::Other; 
+			rv.type = QBCMDT::Other;
 			return rv;
 		}
 		rv.params = params;
@@ -229,9 +244,9 @@ Copyright (C)2020-2021 JasonZYT
 				if (paramsize == 2) rv.type = QBCMDT::Make;
 				else
 				{
-					If_Console{ PRERR(u8"ÒâÍâµÄ " << params[2] << u8" ³öÏÖÔÚ " << cmd); }
-					If_Player{ sendText(exer.pname,string("¡ìcÒâÍâµÄ ") + params[2] + " ³öÏÖÔÚ " + cmd); }
-					L_ERROR(string("- ÒâÍâµÄ ") + params[2] + " ³öÏÖÔÚ " + cmd);
+					If_Console{ PRERR(u8"æ„å¤–çš„ " << params[2] << u8" å‡ºç°åœ¨ " << cmd); }
+					If_Player{ sendText(exer.pname,string("Â§cæ„å¤–çš„ ") + params[2] + " å‡ºç°åœ¨ " + cmd); }
+					L_ERROR(string("- æ„å¤–çš„ ") + params[2] + " å‡ºç°åœ¨ " + cmd);
 					rv.type = QBCMDT::ERRPAR2;
 				}
 			}
@@ -240,42 +255,42 @@ Copyright (C)2020-2021 JasonZYT
 				if (paramsize == 2) rv.type = QBCMDT::List;
 				else if (paramsize > 3)
 				{
-					If_Console{ PRERR(u8"ÒâÍâµÄ " << params[4] << u8" ³öÏÖÔÚ " << cmd); }
-					If_Player{ sendText(exer.pname,string("¡ìcÒâÍâµÄ ") + params[4] + " ³öÏÖÔÚ " + cmd); }
-					L_ERROR(string("- ÒâÍâµÄ ") + params[4] + " ³öÏÖÔÚ " + cmd);
+					If_Console{ PRERR(u8"æ„å¤–çš„ " << params[4] << u8" å‡ºç°åœ¨ " << cmd); }
+					If_Player{ sendText(exer.pname,string("Â§cæ„å¤–çš„ ") + params[4] + " å‡ºç°åœ¨ " + cmd); }
+					L_ERROR(string("- æ„å¤–çš„ ") + params[4] + " å‡ºç°åœ¨ " + cmd);
 					rv.type = QBCMDT::ERRPAR3;
 				}
 				else if (rv.ParamType(2) == QBCMDParam::_int) rv.type = QBCMDT::List;
-				else { 
-					If_Console{ PRERR(u8"²ÎÊı [page: int](Ò³Âë) ²»ºÏ·¨!"); }
-					If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [page: int](Ò³Âë) ²»ºÏ·¨!"); }
-					L_ERROR("²ÎÊı [page: int](Ò³Âë) ²»ºÏ·¨!");
-					rv.type = QBCMDT::ERRPAR2; 
+				else {
+					If_Console{ PRERR(u8"å‚æ•° [page: int](é¡µç ) ä¸åˆæ³•!"); }
+					If_Player{ sendText(exer.pname, "Â§cå‚æ•° [page: int](é¡µç ) ä¸åˆæ³•!"); }
+					L_ERROR("å‚æ•° [page: int](é¡µç ) ä¸åˆæ³•!");
+					rv.type = QBCMDT::ERRPAR2;
 				}
 			}
 			else if (params[1] == "del")
 			{
 				if (paramsize == 2)
 				{
-					If_Console{ PRERR(u8"²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-					If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-					L_ERROR("²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!");
+					If_Console{ PRERR(u8"å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+					If_Player{ sendText(exer.pname, "Â§cå‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+					L_ERROR("å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!");
 					rv.type = QBCMDT::ERRPAR2;
 				}
 				else if (paramsize == 3 && rv.ParamType(2) == QBCMDParam::_int) rv.type = QBCMDT::Del;
 				else if (paramsize == 3 && params[2] == "all") rv.type = QBCMDT::Del;
 				else if (paramsize == 3)
 				{
-					If_Console{ PRERR(u8"²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-					If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-					L_ERROR("²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!");
+					If_Console{ PRERR(u8"å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+					If_Player{ sendText(exer.pname, "Â§cå‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+					L_ERROR("å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!");
 					rv.type = QBCMDT::ERRPAR2;
 				}
 				else
 				{
-					If_Console{ PRERR(u8"ÒâÍâµÄ " << params[4] << u8" ³öÏÖÔÚ " << cmd); }
-					If_Player{ sendText(exer.pname,string("¡ìcÒâÍâµÄ ") + params[4] + " ³öÏÖÔÚ " + cmd); }
-					L_ERROR(string("- ÒâÍâµÄ ") + params[4] + " ³öÏÖÔÚ " + cmd);
+					If_Console{ PRERR(u8"æ„å¤–çš„ " << params[4] << u8" å‡ºç°åœ¨ " << cmd); }
+					If_Player{ sendText(exer.pname,string("Â§cæ„å¤–çš„ ") + params[4] + " å‡ºç°åœ¨ " + cmd); }
+					L_ERROR(string("- æ„å¤–çš„ ") + params[4] + " å‡ºç°åœ¨ " + cmd);
 					rv.type = QBCMDT::ERRPAR3;
 				}
 			}
@@ -284,9 +299,9 @@ Copyright (C)2020-2021 JasonZYT
 				if (paramsize == 2) rv.type = QBCMDT::Reload;
 				else
 				{
-					If_Console{ PRERR(u8"ÒâÍâµÄ " << params[2] << u8" ³öÏÖÔÚ " << cmd); }
-					If_Player{ sendText(exer.pname,string("¡ìcÒâÍâµÄ ") + params[2] + " ³öÏÖÔÚ " + cmd); }
-					L_ERROR(string("- ÒâÍâµÄ ") + params[2] + " ³öÏÖÔÚ " + cmd);
+					If_Console{ PRERR(u8"æ„å¤–çš„ " << params[2] << u8" å‡ºç°åœ¨ " << cmd); }
+					If_Player{ sendText(exer.pname,string("Â§cæ„å¤–çš„ ") + params[2] + " å‡ºç°åœ¨ " + cmd); }
+					L_ERROR(string("- æ„å¤–çš„ ") + params[2] + " å‡ºç°åœ¨ " + cmd);
 					rv.type = QBCMDT::ERRPAR2;
 				}
 			}
@@ -295,9 +310,9 @@ Copyright (C)2020-2021 JasonZYT
 				if (paramsize == 2) rv.type = QBCMDT::Help;
 				else
 				{
-					If_Console{ PRERR(u8"ÒâÍâµÄ " << params[2] << u8" ³öÏÖÔÚ " << cmd); }
-					If_Player{ sendText(exer.pname,string("¡ìcÒâÍâµÄ ") + params[2] + " ³öÏÖÔÚ " + cmd); }
-					L_ERROR(string("- ÒâÍâµÄ ") + params[2] + " ³öÏÖÔÚ " + cmd);
+					If_Console{ PRERR(u8"æ„å¤–çš„ " << params[2] << u8" å‡ºç°åœ¨ " << cmd); }
+					If_Player{ sendText(exer.pname,string("Â§cæ„å¤–çš„ ") + params[2] + " å‡ºç°åœ¨ " + cmd); }
+					L_ERROR(string("- æ„å¤–çš„ ") + params[2] + " å‡ºç°åœ¨ " + cmd);
 					rv.type = QBCMDT::ERRPAR2;
 				}
 			}
@@ -305,18 +320,18 @@ Copyright (C)2020-2021 JasonZYT
 			{
 				if (paramsize == 2)
 				{
-					If_Console{ PRERR(u8"²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-					If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-					L_ERROR("²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!");
+					If_Console{ PRERR(u8"å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+					If_Player{ sendText(exer.pname, "Â§cå‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+					L_ERROR("å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!");
 					rv.type = QBCMDT::ERRPAR2;
 				}
 				else if (paramsize == 3)
 				{
 					if (rv.ParamType(2) != QBCMDParam::_int)
 					{
-						If_Console{ PRERR(u8"²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-						If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-						L_ERROR("²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!");
+						If_Console{ PRERR(u8"å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+						If_Player{ sendText(exer.pname, "Â§cå‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+						L_ERROR("å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!");
 						rv.type = QBCMDT::ERRPAR3;
 					}
 					else QBCMDT::Back;
@@ -325,16 +340,16 @@ Copyright (C)2020-2021 JasonZYT
 				{
 					if (rv.ParamType(2) != QBCMDParam::_int)
 					{
-						If_Console{ PRERR(u8"²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-						If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-						L_ERROR("²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!");
+						If_Console{ PRERR(u8"å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+						If_Player{ sendText(exer.pname, "Â§cå‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+						L_ERROR("å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!");
 						rv.type = QBCMDT::ERRPAR3;
 					}
 					else if (rv.ParamType(3) != QBCMDParam::_bool)
 					{
-						If_Console{ PRERR(u8"²ÎÊı [delsrc: bool](ÊÇ·ñÉ¾³ıÔ´) ²»ºÏ·¨!"); }
-						If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [delsrc: bool](ÊÇ·ñÉ¾³ıÔ´) ²»ºÏ·¨!"); }
-						L_ERROR("²ÎÊı [delsrc: bool](ÊÇ·ñÉ¾³ıÔ´) ²»ºÏ·¨!");
+						If_Console{ PRERR(u8"å‚æ•° [delsrc: bool](æ˜¯å¦åˆ é™¤æº) ä¸åˆæ³•!"); }
+						If_Player{ sendText(exer.pname, "Â§cå‚æ•° [delsrc: bool](æ˜¯å¦åˆ é™¤æº) ä¸åˆæ³•!"); }
+						L_ERROR("å‚æ•° [delsrc: bool](æ˜¯å¦åˆ é™¤æº) ä¸åˆæ³•!");
 						rv.type = QBCMDT::ERRPAR4;
 					}
 					else QBCMDT::Back;
@@ -343,40 +358,91 @@ Copyright (C)2020-2021 JasonZYT
 				{
 					if (rv.ParamType(2) != QBCMDParam::_int)
 					{
-						If_Console{ PRERR(u8"²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-						If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!"); }
-						L_ERROR("²ÎÊı [onum: int](ĞòºÅ) ²»ºÏ·¨!");
+						If_Console{ PRERR(u8"å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+						If_Player{ sendText(exer.pname, "Â§cå‚æ•° [onum: int](åºå·) ä¸åˆæ³•!"); }
+						L_ERROR("å‚æ•° [onum: int](åºå·) ä¸åˆæ³•!");
 						rv.type = QBCMDT::ERRPAR3;
 					}
 					else if (rv.ParamType(3) != QBCMDParam::_bool)
 					{
-						If_Console{ PRERR(u8"²ÎÊı [delsrc: bool](ÊÇ·ñÉ¾³ıÔ´) ²»ºÏ·¨!"); }
-						If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [delsrc: bool](ÊÇ·ñÉ¾³ıÔ´) ²»ºÏ·¨!"); }
-						L_ERROR("²ÎÊı [delsrc: bool](ÊÇ·ñÉ¾³ıÔ´) ²»ºÏ·¨!");
+						If_Console{ PRERR(u8"å‚æ•° [delsrc: bool](æ˜¯å¦åˆ é™¤æº) ä¸åˆæ³•!"); }
+						If_Player{ sendText(exer.pname, "Â§cå‚æ•° [delsrc: bool](æ˜¯å¦åˆ é™¤æº) ä¸åˆæ³•!"); }
+						L_ERROR("å‚æ•° [delsrc: bool](æ˜¯å¦åˆ é™¤æº) ä¸åˆæ³•!");
 						rv.type = QBCMDT::ERRPAR4;
 					}
-					else if (rv.ParamType(4) != QBCMDParam::_bool) 
+					else if (rv.ParamType(4) != QBCMDParam::_bool)
 					{
-						If_Console{ PRERR(u8"²ÎÊı [delevel: bool](ÊÇ·ñÉ¾³ı´æµµ) ²»ºÏ·¨!"); }
-						If_Player{ sendText(exer.pname, "¡ìc²ÎÊı [delevel: bool](ÊÇ·ñÉ¾³ı´æµµ) ²»ºÏ·¨!"); }
-						L_ERROR("²ÎÊı [delevel: bool](ÊÇ·ñÉ¾³ı´æµµ) ²»ºÏ·¨!");
+						If_Console{ PRERR(u8"å‚æ•° [delevel: bool](æ˜¯å¦åˆ é™¤å­˜æ¡£) ä¸åˆæ³•!"); }
+						If_Player{ sendText(exer.pname, "Â§cå‚æ•° [delevel: bool](æ˜¯å¦åˆ é™¤å­˜æ¡£) ä¸åˆæ³•!"); }
+						L_ERROR("å‚æ•° [delevel: bool](æ˜¯å¦åˆ é™¤å­˜æ¡£) ä¸åˆæ³•!");
 						rv.type = QBCMDT::ERRPAR5;
 					}
 					else QBCMDT::Back;
 				}
 				else
 				{
-					If_Console{ PRERR(u8"ÒâÍâµÄ " << params[6] << u8" ³öÏÖÔÚ " << cmd); }
-					If_Player{ sendText(exer.pname,string("¡ìcÒâÍâµÄ ") + params[6] + " ³öÏÖÔÚ " + cmd); }
-					L_ERROR(string("- ÒâÍâµÄ ") + params[6] + " ³öÏÖÔÚ " + cmd);
+					If_Console{ PRERR(u8"æ„å¤–çš„ " << params[6] << u8" å‡ºç°åœ¨ " << cmd); }
+					If_Player{ sendText(exer.pname,string("Â§cæ„å¤–çš„ ") + params[6] + " å‡ºç°åœ¨ " + cmd); }
+					L_ERROR(string("- æ„å¤–çš„ ") + params[6] + " å‡ºç°åœ¨ " + cmd);
 					rv.type = QBCMDT::ERRPAR6;
+				}
+			}
+			else if (params[1] == "auto")
+			{
+				if (paramsize == 2) rv.type = QBCMDT::Auto;
+				else if (params[2] == "add")
+				{
+					if (paramsize > 4)
+					{
+						If_Console{ PRERR(u8"æ„å¤–çš„ " << params[4] << u8" å‡ºç°åœ¨ " << cmd); }
+						If_Player{ sendText(exer.pname,string("Â§cæ„å¤–çš„ ") + params[4] + " å‡ºç°åœ¨ " + cmd); }
+						L_ERROR(string("- æ„å¤–çš„ ") + params[4] + " å‡ºç°åœ¨ " + cmd);
+						rv.type = QBCMDT::ERRPAR4;
+					}
+					else if (paramsize == 3)
+					{
+						If_Console{ PRERR(u8"å‚æ•° <time: string>(æŒ‡å®šæ—¶é—´ HH:MM) ä¸åˆæ³•!"); }
+						If_Player{ sendText(exer.pname, "Â§cå‚æ•° <time: string>(æŒ‡å®šæ—¶é—´ HH:MM) ä¸åˆæ³•!"); }
+						L_ERROR("å‚æ•° <time: string>(æŒ‡å®šæ—¶é—´ HH:MM) ä¸åˆæ³•!");
+						rv.type = QBCMDT::ERRPAR3;
+					}
+					else if (rv.ParamType(3) != QBCMDParam::time)
+					{
+						If_Console{ PRERR(u8"å‚æ•° <time: string>(æŒ‡å®šæ—¶é—´ HH:MM) ä¸åˆæ³•!"); }
+						If_Player{ sendText(exer.pname, "Â§cå‚æ•° <time: string>(æŒ‡å®šæ—¶é—´ HH:MM) ä¸åˆæ³•!"); }
+						L_ERROR("å‚æ•° <time: string>(æŒ‡å®šæ—¶é—´ HH:MM) ä¸åˆæ³•!");
+						rv.type = QBCMDT::ERRPAR3;
+					}
+					else rv.type = QBCMDT::Auto;
+				}
+				else if (params[2] == "list")
+				{
+					if (paramsize > 3)
+					{
+						If_Console{ PRERR(u8"æ„å¤–çš„ " << params[3] << u8" å‡ºç°åœ¨ " << cmd); }
+						If_Player{ sendText(exer.pname,string("Â§cæ„å¤–çš„ ") + params[3] + " å‡ºç°åœ¨ " + cmd); }
+						L_ERROR(string("- æ„å¤–çš„ ") + params[3] + " å‡ºç°åœ¨ " + cmd);
+						rv.type = QBCMDT::ERRPAR3;
+					}
+					else rv.type = QBCMDT::Auto;
+				}
+				else if (rv.ParamType(2) == QBCMDParam::on_off)
+				{
+					rv.type = QBCMDT::Auto;
+				}
+				else
+				{
+					If_Console{ PRERR(u8"å‚æ•° <cmd: QBCMD_Auto>(Autoå‘½ä»¤) ä¸åˆæ³•!"); }
+					If_Player{ sendText(exer.pname, "Â§cå‚æ•° <cmd: QBCMD_Auto>(Autoå‘½ä»¤) ä¸åˆæ³•!"); }
+					L_ERROR("å‚æ•° <cmd: QBCMD_Auto>(Autoå‘½ä»¤) ä¸åˆæ³•!");
+					rv.type = QBCMDT::ERRPAR2;
 				}
 			}
 			else
 			{
-				If_Console{ PRERR(u8"²ÎÊı <cmd: QBCMDT>(ÃüÁî) ²»ºÏ·¨!"); }
-				If_Player{ sendText(exer.pname, "¡ìc²ÎÊı <cmd: QBCMDT>(ÃüÁî) ²»ºÏ·¨!"); }
-				L_ERROR("²ÎÊı <cmd: int>(ÃüÁî) ²»ºÏ·¨!");
+				If_Console{ PRERR(u8"å‚æ•° <cmd: QBCMDT>(å‘½ä»¤) ä¸åˆæ³•!"); }
+				If_Player{ sendText(exer.pname, "Â§cå‚æ•° <cmd: QBCMDT>(å‘½ä»¤) ä¸åˆæ³•!"); }
+				L_ERROR("å‚æ•° <cmd: QBCMDT>(å‘½ä»¤) ä¸åˆæ³•!");
 				rv.type = QBCMDT::ERRPAR1;
 			}
 		}
@@ -387,22 +453,24 @@ Copyright (C)2020-2021 JasonZYT
 		return rv;
 	}
 
+#pragma endregion
+
 	SYMHOOK(onServerCMD, bool, "??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$SPSCQueue@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@$0CAA@@@AEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z", VA _this, string* cmd)
 	{
 		string cmdstr = *cmd;
 		Backup::Executor exer;
 		exer.type = Console_Type;
 		QBCMD qcmd = CMDCheck(cmdstr, exer);
-		//cout << (int)qcmd.type;
 		if (qcmd.type != QBCMDT::Other)
 		{
-			L_INFO(string("¿ØÖÆÌ¨Ö´ĞĞÁËQBÃüÁî: ") + *cmd);
+			L_INFO(string("æ§åˆ¶å°æ‰§è¡Œäº†QBå‘½ä»¤: ") + *cmd);
 			if (qcmd.type == QBCMDT::Make)
 			{
 				// Backup Main
 				Backup* bak = new Backup;
 				thread mkbackup(&Backup::Make, bak, exer); 
-				mkbackup.detach(); // "detachÒÔºó£¬×ÓÏß³Ì»á³ÉÎª¹Â¶ùÏß³Ì£¬Ïß³ÌÖ®¼ä½«ÎŞ·¨Í¨ĞÅ"
+				mkbackup.detach(); // "detachä»¥åï¼Œå­çº¿ç¨‹ä¼šæˆä¸ºå­¤å„¿çº¿ç¨‹ï¼Œçº¿ç¨‹ä¹‹é—´å°†æ— æ³•é€šä¿¡"
+				//delete bak;
 				//bak->Make(exer);
 			}
 			else if (qcmd.type == QBCMDT::List)
@@ -418,68 +486,159 @@ Copyright (C)2020-2021 JasonZYT
 				{
 					for (int iter = 0; iter <= baklist.size() - 1 ; iter++)
 					{
-						cout << u8"- ±¸·İ[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
+						cout << u8"- å¤‡ä»½[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
 					}
 					return false;
 				}
 				int lpages = cfg->lops;
-				double v1 = (baklist.size() / static_cast<double>(lpages));
+				double v1 = (baklist.size() / SC(double, lpages));
 				int page_quan = v1 + 0.99999999;
 				if (pag > page_quan) pag = page_quan;
 				if (page_quan == 0)
 				{
-					PRWARN(u8"ÎŞ±¸·İ!!! ÊäÈë \"qb make\" ´´½¨Ò»¸ö±¸·İ");
+					PRWARN(u8"æ— å¤‡ä»½!!! è¾“å…¥ \"qb make\" åˆ›å»ºä¸€ä¸ªå¤‡ä»½");
 					return false;
 				}
 				int startline = lpages * (pag - 1);
 				int endline = lpages * pag - 1;
-				cout << u8"========================= ±¸·İÁĞ±í µÚ " << pag << "/" << page_quan << u8" Ò³ ¹² " << baklist.size() << u8" ¸ö±¸·İ =========================" << endl;
+				cout << u8"========================= å¤‡ä»½åˆ—è¡¨ ç¬¬ " << pag << "/" << page_quan << u8" é¡µ å…± " << baklist.size() << u8" ä¸ªå¤‡ä»½ =========================" << endl;
 				for (int iter = startline; iter <= endline && iter <= baklist.size() - 1; iter++)
 				{
-					cout << u8"- ±¸·İ[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
+					cout << u8"- å¤‡ä»½[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
 				}
-				cout << u8"========================= ±¸·İÁĞ±í µÚ " << pag << "/" << page_quan << u8" Ò³ ¹² " << baklist.size() << u8" ¸ö±¸·İ =========================" << endl;
+				cout << u8"========================= å¤‡ä»½åˆ—è¡¨ ç¬¬ " << pag << "/" << page_quan << u8" é¡µ å…± " << baklist.size() << u8" ä¸ªå¤‡ä»½ =========================" << endl;
 			}
 			else if (qcmd.type == QBCMDT::Del)
 			{
 				if (qcmd.params[2] == "all")
 				{
-					PRWARN(u8"ÄúÕıÔÚÖ´ĞĞÉ¾³ıÈ«²¿±¸·İ!");
+					if (rec->blist.size() == 0)
+					{
+						PRWARN(u8"æ— å¤‡ä»½!!! è¾“å…¥ \"qb make\" åˆ›å»ºä¸€ä¸ªå¤‡ä»½");
+						return false;
+					}
+					PRWARN(u8"æ‚¨æ­£åœ¨æ‰§è¡Œåˆ é™¤å…¨éƒ¨å¤‡ä»½!");
+					L_WARNING("æ‰§è¡Œåˆ é™¤å…¨éƒ¨å¤‡ä»½...");
+					for (int i = 0; i < rec->blist.size(); i++)
+					{
+						int onum = rec->blist[i]->onum;
+						PR(u8"åˆ é™¤å¤‡ä»½[" << onum << "]...");
+						rec->blist[i]->Delete(exer);
+					}
+					PR(u8"åˆ é™¤å®Œæˆ!");
+					L_INFO(u8"åˆ é™¤å®Œæˆ!");
+					return false;
 				}
 				int onum = atoi(qcmd.params[2].c_str());
 				if (onum >= rec->blist.size())
 				{
-					PRERR(u8"ÕÒ²»µ½±¸·İ[" << onum << "]!·¢ËÍ\"qb list\"²é¿´µ±Ç°µÄ±¸·İ");
-					L_ERROR("- Ö´ĞĞÊ§°Ü!");
+					PRERR(u8"æ‰¾ä¸åˆ°å¤‡ä»½[" << onum << "]!å‘é€\"qb list\"æŸ¥çœ‹å½“å‰çš„å¤‡ä»½");
+					L_ERROR("- æ‰§è¡Œå¤±è´¥!");
 					return false;
 				}
-				Backup::Executor exer;
-				exer.type = Console_Type;
 				rec->blist[(onum - 1)]->Delete(exer);
 			}
 			else if (qcmd.type == QBCMDT::Reload)
 			{
 				if (cfg->getConfig())
 				{
-					PR(u8"ÅäÖÃÖØÔØ³É¹¦!");
-					L_INFO("ÅäÖÃÖØÔØ³É¹¦!");
+					ab->Init();
+					PR(u8"é…ç½®é‡è½½æˆåŠŸ!");
+					L_INFO("é…ç½®é‡è½½æˆåŠŸ!");
 				}
 				else
 				{
-					PR(u8"ÅäÖÃÖØÔØÊ§°Ü: " << CONFIGFILE << "ÎŞ·¨´ò¿ª!!!");
-					L_INFO("ÅäÖÃÖØÔØÊ§°Ü!");
+					PR(u8"é…ç½®é‡è½½å¤±è´¥: " << CONFIGFILE << "æ— æ³•æ‰“å¼€!!!");
+					L_INFO("é…ç½®é‡è½½å¤±è´¥!");
 				}
 			}
 			else if (qcmd.type == QBCMDT::Back)
 			{
 				
 			}
+			else if (qcmd.type == QBCMDT::Auto)
+			{
+				if (qcmd.params.size() == 2)
+				{
+					cout << u8"å½“å‰çš„å¤‡ä»½çŠ¶æ€ä¸º: " << (ab->is_on ? "On" : "Off") << endl;
+				}
+				else if (qcmd.params[2] == "on")
+				{
+					ab->is_on = true;
+					PR(u8"è‡ªåŠ¨å¤‡ä»½å¼€å¯æˆåŠŸ!");
+					L_INFO(u8"è‡ªåŠ¨å¤‡ä»½å¼€å¯æˆåŠŸ!");
+				}
+				else if (qcmd.params[2] == "off")
+				{
+					ab->is_on = false;
+					PR(u8"è‡ªåŠ¨å¤‡ä»½å·²å…³é—­!");
+					L_INFO(u8"è‡ªåŠ¨å¤‡ä»½å·²å…³é—­!");
+				}
+				else if (qcmd.params[2] == "list")
+				{
+					ostringstream osstr;
+					osstr << u8"å½“å‰çš„å¤‡ä»½çŠ¶æ€ä¸º: " << (ab->is_on ? "On" : "Off") << endl 
+						<< u8"å°†ä¼šåœ¨ä»¥ä¸‹æ—¶é—´æ‰§è¡Œè‡ªåŠ¨å¤‡ä»½: ";
+					for (auto& _t : ab->time)
+					{
+						cout<<ctime(&_t);
+						//tm* ltime = localtime(&_t);
+						//osstr << ltime->tm_hour << ":" << ltime->tm_min << " ";
+					}
+					osstr << endl;
+					if (ab->is_on)
+					{
+						tm tmnow;
+						vector<int> dtres;
+						tmnow.tm_hour = ab->getLocalHour();
+						tmnow.tm_min = ab->getLocalMinute();
+						time_t tmtn = mktime(&tmnow);
+						for (auto& _t1 : ab->time)
+						{
+							dtres.push_back(difftime(tmtn, _t1));
+						}
+						sort(dtres.begin(), dtres.end());
+						int h = dtres[0] / 60 / 60;
+						int m = dtres[0] - 60 * h;
+						osstr << u8"è·ç¦»ä¸‹æ¬¡è‡ªåŠ¨å¤‡ä»½è¿˜æœ‰: " << h << u8" å°æ—¶ " << m << u8" åˆ†é’Ÿ" << endl;
+					}
+					cout << osstr.str();
+				}
+			}
 			return false;
+		}
+		if (qcmd.params[0] == "qtest")
+		{
+			//Directory dir1(filesystem::path("./worlds/Bedrock level/"));
+			//dir1.copy_all_to("./backups/");
+			filesystem::copy("./worlds/", "./backups/");
+			Directory dir(filesystem::path("./backups/"));
+			QBZIP* qz = new QBZIP(filesystem::path("./ttest.zip"));
+			dir.dirlist();
+			qz->Add((FList)dir);
+			qz->Save();
+		}
+		if (qcmd.params[0] == "qtest1")
+		{
+			bundle::archive pak;
+			pak.resize(3);
+			pak[0]["name"] = "test.txt";
+			pak[0]["data"] = "hello world";
+			pak[1]["name"] = "test2.txt";
+			pak[1]["data"] = "1337";
+			pak[2]["name"] = "temp\\test.txt";
+			pak[2]["data"] = "1337";
+			string binary = pak.zip(100);
+			std::ofstream ofs("./test_123.zip", std::ios::out | std::ios::binary);
+			if (ofs)
+			{
+				ofs << binary;
+				ofs.close();
+			}
 		}
 		original(_this, cmd);
 	}
-
-	/*
+	
 	SYMHOOK(onPlayerCMD, void, "?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@AEBVCommandRequestPacket@@@Z", VA _this, VA id, CommandRequestPacket* crp)
 	{
 		Player* pp = SYMCALL<Player*>("?_getServerPlayer@ServerNetworkHandler@@AEAAPEAVServerPlayer@@AEBVNetworkIdentifier@@E@Z", _this, id, *((char*)crp + 16));
@@ -491,81 +650,116 @@ Copyright (C)2020-2021 JasonZYT
 		QBCMD qcmd = CMDCheck(cmd, exer);
 		if (qcmd.type != QBCMDT::Other)
 		{
-			L_INFO(string("Íæ¼Ò ") + pp->getNameTag() + " Ö´ĞĞÁËQBÃüÁî: " + cmd);
+			L_INFO(string("ç©å®¶ ") + exer.pname + " æ‰§è¡Œäº†QBå‘½ä»¤: " + cmd);
+			TellAdmin(string("ç©å®¶ ") + exer.pname + " æ‰§è¡Œäº†QBå‘½ä»¤: " + cmd, exer.pxuid);
+			PR(string("ç©å®¶ ") + exer.pname + " æ‰§è¡Œäº†QBå‘½ä»¤: " + cmd);
 			if (qcmd.type == QBCMDT::Make)
 			{
 				// Backup Main
 				Backup* bak = new Backup;
 				thread mkbackup(&Backup::Make, bak, exer);
-				mkbackup.detach(); // "detachÒÔºó£¬×ÓÏß³Ì»á³ÉÎª¹Â¶ùÏß³Ì£¬Ïß³ÌÖ®¼ä½«ÎŞ·¨Í¨ĞÅ"
+				mkbackup.detach(); // "detachä»¥åï¼Œå­çº¿ç¨‹ä¼šæˆä¸ºå­¤å„¿çº¿ç¨‹ï¼Œçº¿ç¨‹ä¹‹é—´å°†æ— æ³•é€šä¿¡"
+				//delete bak;
 				//bak->Make(exer);
 			}
 			else if (qcmd.type == QBCMDT::List)
 			{
 				int page;
 				if (qcmd.params.size() == 2) page = 1;
-				else
-				{
-					if (qcmd.ParamType(2) == QBCMDParam::_int)
-					{
-						sendText(pp->getNameTag(), "²ÎÊı [page: int](Ò³Âë) ²»ºÏ·¨,ÇëÖØÊÔ!");
-						L_ERROR("- ²ÎÊı [page: int](Ò³Âë) ²»ºÏ·¨£¡");
-						L_ERROR("- Ö´ĞĞÊ§°Ü!");
-						return;
-					}
-					page = atoi(qcmd.params[2].c_str());
-				}
+				else page = atoi(qcmd.params[2].c_str());
 				int pag = 1;
 				if (page > 0) pag = page;
 				// List Main
+				ostringstream out;
 				vector<Backup*> baklist = rec->blist;
-				double v1 = (baklist.size() / static_cast<double>(30));
-				int page_quan = ceil(v1);
+				if (cfg->lops <= 0)
+				{
+					for (int iter = 0; iter <= baklist.size() - 1; iter++)
+					{
+						out << "Â§e- å¤‡ä»½[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
+					}
+					sendText(exer.pname, out.str());
+					return;
+				}
+				int lpages = cfg->lops; 
+				double v1 = (baklist.size() / SC(double, lpages));
+				int page_quan = v1 + 0.99999999;
 				if (pag > page_quan) pag = page_quan;
 				if (page_quan == 0)
 				{
-					PRWARN(u8"ÎŞ±¸·İ!!! ÊäÈë \"qb make\" ´´½¨Ò»¸ö±¸·İ");
+					sendText(exer.pname, "Â§cæ— å¤‡ä»½!!! è¾“å…¥ \"qb make\" åˆ›å»ºä¸€ä¸ªå¤‡ä»½");
 					return;
 				}
-				int startline = 30 * (pag - 1);
-				int endline = 30 * pag - 1;
-				cout << u8"========================= ±¸·İÁĞ±í µÚ " << pag << "/" << page_quan << u8" Ò³ ¹² " << baklist.size() << u8" ¸ö±¸·İ =========================" << endl;
+				int startline = lpages * (pag - 1);
+				int endline = lpages * pag - 1;
+				out << "Â§b========================= å¤‡ä»½åˆ—è¡¨ ç¬¬ " << pag << "/" << page_quan << " é¡µ å…± " << baklist.size() << " ä¸ªå¤‡ä»½ =========================" << endl;
 				for (int iter = startline; iter <= endline && iter <= baklist.size() - 1; iter++)
 				{
-					cout << u8"- ±¸·İ[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
+					out << "Â§e- å¤‡ä»½[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
 				}
-				cout << u8"========================= ±¸·İÁĞ±í µÚ " << pag << "/" << page_quan << u8" Ò³ ¹² " << baklist.size() << u8" ¸ö±¸·İ =========================" << endl;
+				out << "Â§b========================= å¤‡ä»½åˆ—è¡¨ ç¬¬ " << pag << "/" << page_quan << " é¡µ å…± " << baklist.size() << " ä¸ªå¤‡ä»½ =========================" << endl;
+				sendText(exer.pname, out.str());
 			}
 			else if (qcmd.type == QBCMDT::Del)
 			{
-				if (qcmd.ParamType(2) != QBCMDParam::_int)
+				if (qcmd.params[2] == "all") sendText(exer.pname, "Â§cæ‚¨æ²¡æœ‰æƒé™æ‰§è¡Œè¯¥æ“ä½œ!");
+				int onum = atoi(qcmd.params[2].c_str());
+				if (onum >= rec->blist.size())
 				{
-					PRERR(u8"²ÎÊı [onum: int](±¸·İĞòºÅ) ²»ºÏ·¨,ÇëÖØÊÔ!");
-					L_ERROR("- ²ÎÊı [onum: int](±¸·İĞòºÅ) ²»ºÏ·¨£¡");
-					L_ERROR("- Ö´ĞĞÊ§°Ü!");
+					sendText(exer.pname, string("Â§cæ‰¾ä¸åˆ°å¤‡ä»½[") + to_string(onum) + "]!å‘é€\"qb list\"æŸ¥çœ‹å½“å‰çš„å¤‡ä»½");
+					L_ERROR("- æ‰§è¡Œå¤±è´¥!");
 					return;
 				}
-				int onum = atoi(qcmd.params[2].c_str());
 				rec->blist[(onum - 1)]->Delete(exer);
 			}
-			else
+			else if (qcmd.type == QBCMDT::Reload)
 			{
-				PRERR(u8"²ÎÊı²»ºÏ·¨!");
-				L_ERROR("- ²ÎÊı²»ºÏ·¨£¡");
-				L_ERROR("- Ö´ĞĞÊ§°Ü!");
-				return;
+				sendText(exer.pname, "Â§cæ‚¨æ²¡æœ‰æƒé™æ‰§è¡Œè¯¥æ“ä½œ!");
+			}
+			else if (qcmd.type == QBCMDT::Back)
+			{
+
+			}
+			else if (qcmd.type == QBCMDT::Auto)
+			{
+				if (qcmd.params.size() == 2)
+				{
+					sendText(exer.pname, string("Â§bå½“å‰çš„å¤‡ä»½çŠ¶æ€ä¸º: ") + (ab->is_on ? "Â§aOn" : "Â§cOff"));
+				}
+				if (Is_Admin(exer.pname, exer.pxuid))
+				{
+					if (qcmd.params[2] == "on")
+					{
+						ab->is_on = true;
+						sendText(exer.pname, "è‡ªåŠ¨å¤‡ä»½å¼€å¯æˆåŠŸ!");
+						L_INFO(u8"è‡ªåŠ¨å¤‡ä»½å¼€å¯æˆåŠŸ!");
+					}
+					else if (qcmd.params[2] == "off")
+					{
+						ab->is_on = false;
+						sendText(exer.pname, "è‡ªåŠ¨å¤‡ä»½å·²å…³é—­!");
+						L_INFO(u8"è‡ªåŠ¨å¤‡ä»½å·²å…³é—­!");
+					}
+				}
+				else
+				{
+					PRWARN(u8"ç©å®¶ " << exer.pname << u8" è¯•å›¾æ‰§è¡Œè‡ªåŠ¨å¤‡ä»½,ä½†å› æ— æƒé™è¢«æ‹¦æˆªäº†");
+					L_WARNING(string("ç©å®¶ ") + exer.pname + "è¯•å›¾æ‰§è¡Œè‡ªåŠ¨å¤‡ä»½(æ— æƒé™)");
+					TellAdmin(string("ç©å®¶ ") + exer.pname + "(æ— æƒé™) è¯•å›¾æ‰§è¡Œè‡ªåŠ¨å¤‡ä»½");
+					sendText(exer.pname, "Â§cæ‚¨æ²¡æœ‰æƒé™æ‰§è¡Œæ­¤æ“ä½œ!!!");
+				}
 			}
 			return;
 		}
 		original(_this, id, crp);
-	}*/
+	}
 
 	SYMHOOK(onCBCMD, bool, "?performCommand@CommandBlockActor@@QEAA_NAEAVBlockSource@@@Z",
 		VA _this, BlockSource* a2) {
-		//Âö³å:0,ÖØ¸´:1,Á´:2
+		//è„‰å†²:0,é‡å¤:1,é“¾:2
 		int mode = SYMCALL<int>("?getMode@CommandBlockActor@@QEBA?AW4CommandBlockMode@@AEAVBlockSource@@@Z",
 			_this, a2);
-		//ÎŞÌõ¼ş:0,ÓĞÌõ¼ş:1
+		//æ— æ¡ä»¶:0,æœ‰æ¡ä»¶:1
 		bool condition = SYMCALL<bool>("?getConditionalMode@CommandBlockActor@@QEBA_NAEAVBlockSource@@@Z",
 			_this, a2);
 		string cmd = offset(string, _this + 264/*208*/);
@@ -576,33 +770,66 @@ Copyright (C)2020-2021 JasonZYT
 		exer.type = Block_Type;
 		exer.cbmode = (Backup::Executor::CBMode)mode;
 		exer.cbcdit = condition;
-		exer.cbpos = to_string(dim) + ":" + bp.toString(); // 1:0,0,0 µØÓü0,0,0´¦
+		exer.cbpos = to_string(dim) + ":" + bp.toString(); // 1:0,0,0 åœ°ç‹±0,0,0å¤„
 		QBCMD qcmd = CMDCheck(cmd, exer);
 		if (qcmd.type != QBCMDT::Other)
 		{
 			if (qcmd.type == QBCMDT::Make)
 			{
 				Backup* bak = new Backup;
-				bak->Make(exer);
+				thread mkbackup(&Backup::Make, bak, exer);
+				mkbackup.detach();
+				//delete bak;
 			}
 			return false;
 		}
 		original(_this, a2);
 	}
 
-	SYMHOOK(GetXuid, Player*, "??0Player@@QEAA@AEAVLevel@@AEAVPacketSender@@W4GameType@@AEBVNetworkIdentifier@@EVUUID@mce@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$unique_ptr@VCertificate@@U?$default_delete@VCertificate@@@std@@@8@55@Z", Player* _this, VA level, __int64 a3, int a4, __int64 a5, __int64 a6, void* xuid, std::string& strxuid, __int64* a9, __int64 a10, __int64 a11) {
+	enum CommandFlag1 : uint8_t
+	{
+		None = 0x0,
+		Message = 0x20
+	};
+	enum CommandFlag2 : uint8_t {
+		Cheat = 0x0,
+		NoCheat = 0x40,
+	};
+	enum CommandPermissionLevel : char {
+		Normal = 0,
+		Privileged = 1,
+		AutomationPlayer = 2,
+		OperatorOnly = 3,
+		ConsoleOnly = 4
+	};
+	struct CommandRegistry
+	{
+		void registerCommand(string const& a, char const* b, char c, char d, char e)
+		{
+			SYMCALL<void>("?registerCommand@CommandRegistry@@QEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PEBDW4CommandPermissionLevel@@UCommandFlag@@3@Z", 
+				this, a, b, c, d, e);
+		}
+	};
+	SYMHOOK(FakeCommandReg, void, "?setup@ChangeSettingCommand@@SAXAEAVCommandRegistry@@@Z", CommandRegistry* _this)
+	{
+		_this->registerCommand("qb", "QuickBackupXæ’ä»¶å‘½ä»¤", Normal, None, NoCheat);
+		return original(_this);
+	}
+
+	SYMHOOK(GetXuid, Player*, "??0Player@@QEAA@AEAVLevel@@AEAVPacketSender@@W4GameType@@AEBVNetworkIdentifier@@EVUUID@mce@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$unique_ptr@VCertificate@@U?$default_delete@VCertificate@@@std@@@8@55@Z", 
+		Player* _this, VA level, __int64 a3, int a4, __int64 a5, __int64 a6, void* xuid, 
+		std::string& strxuid, __int64* a9, __int64 a10, __int64 a11) 
+	{
 		pxuid_level = level;
 		return original(_this, level, a3, a4, a5, a6, xuid, strxuid, a9, a10, a11);
 	}
 
-	SYMHOOK(onServerCMDOutput, VA, "??$_Insert_string@DU?$char_traits@D@std@@_K@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@QEBD_K@Z", VA handle, char* str, VA size)
+	SYMHOOK(onServerCMDOutput, VA, "??$_Insert_string@DU?$char_traits@D@std@@_K@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@QEBD_K@Z", 
+		VA handle, char* str, VA size)
 	{
 		string output = string(str);
 		if (output == "MCPE")
 		{
-			L_INFO("AutoBackupÏß³Ì¿ªÊ¼...");
-			thread thab(&RunAutoBackup);
-			thab.detach();
 			//HRESULT res = URLDownloadToFileA(NULL, "plugin.skytown.xyz", "./QuickBackupX/qbx.exe", NULL, NULL);
 		}
 		return original(handle, str, size);

@@ -18,7 +18,10 @@ namespace QuickBackupX
 		bool debug = false;
 		bool acb = false; // Allow Command Block
 		bool eula = false; // Agree EULA
+		bool aoab = false;
 		int lops = 10;
+		int csl = 60;
+		int abm = 10;
 		std::string bop = ""; // Backup Output Path
 		std::string los = "";
 		std::string vos = "";
@@ -28,6 +31,7 @@ namespace QuickBackupX
 		std::map<std::string, std::string> back; // Can Back Player Vector
 		bool getConfig();
 		bool AddConfig();
+		bool AddPermissionXuid(PerType per, std::string name, std::string xuid);
 		bool EditPermissionName(PerType per, std::string xuid, std::string name);
 		bool PlayerIsAdmin(std::string name, std::string xuid);
 		std::string getBackupDir();
@@ -35,7 +39,9 @@ namespace QuickBackupX
 		std::string getBackupDisk();
 	private:
 		Json::Value cfgjv;
-		bool getJsonArray(Json::Value root);
+		template<typename retvec>
+		std::vector<retvec> getConfigArray(std::string key);
+		std::map<std::string, std::string> getPermission(PerType per);
 	};
 }
 

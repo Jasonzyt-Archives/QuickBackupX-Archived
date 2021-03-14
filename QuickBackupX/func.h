@@ -4,6 +4,7 @@
 #define QBX_FUNC_INCLUDED
 #include "pch.h"
 #include "md5.h"
+#include "backup.h"
 #include "json/json.h"
 
 namespace QuickBackupX
@@ -34,7 +35,8 @@ namespace QuickBackupX
 	bool DestroyForm(unsigned fid);
 	unsigned SendForm(std::string uuid, std::string str);
 	bool Is_Admin(std::string pname, std::string pxuid);
-	bool TellAdmin(std::string msg);
+	//bool Is_Admin(QuickBackupX::Backup::Executor exer);
+	bool TellAdmin(std::string msg, std::string pxuid = "");
 }
 
 #endif // !QBX_FUNC_INCLUDED
