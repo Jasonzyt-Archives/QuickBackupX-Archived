@@ -3,9 +3,6 @@
 #include "logger.h"
 #include "config.h"
 #include "properties.h"
-#include "zip/ZipDefine.h"
-#include "zip/zip.h"
-#include "zip/unzip.h"
 #pragma warning(disable:4996)
 
 using namespace std;
@@ -50,10 +47,10 @@ namespace QuickBackupX
 		if (str)
 		{
 			size_t nu = strlen(str);
-			size_t n = (size_t)MultiByteToWideChar(ZIP_UNICODE, 0, (const char*)str, int(nu), NULL, 0);
+			size_t n = (size_t)MultiByteToWideChar(0, 0, (const char*)str, int(nu), NULL, 0);
 			buffer = 0;
 			buffer = new wchar_t[n + 1];
-			MultiByteToWideChar(ZIP_UNICODE, 0, (const char*)str, int(nu), buffer, int(n));
+			MultiByteToWideChar(0, 0, (const char*)str, int(nu), buffer, int(n));
 			buffer[n] = 0;
 		}
 		return buffer;
@@ -136,70 +133,6 @@ namespace QuickBackupX
 		pwBuf = NULL;
 		pBuf = NULL;
 		return retStr;
-	}
-
-	string ZipRetCheck(int in)
-	{
-		switch (in)
-		{
-		case ZR_OK:
-			return "压缩成功";
-			break;
-		case ZR_NOFILE:
-			return "找不到需要压缩的文件";
-			break;
-		case ZR_NODUPH:
-			return "无法复制句柄";
-			break;
-		case ZR_NOALLOC:
-			return "未能分配某些资源";
-			break;
-		case ZR_WRITE:
-			return "写入文件时出现错误";
-			break;
-		case ZR_NOTFOUND:
-			return "在压缩文件中找不到该文件";
-			break;
-		case ZR_MORE:
-			return "还有更多数据要解压缩";
-			break;
-		case ZR_CORRUPT:
-			return "压缩文件已损坏或不是ZIP压缩文件";
-			break;
-		case ZR_READ:
-			return "读取文件时出现常规错误";
-			break;
-		case ZR_PASSWORD:
-			return "没有获得正确的密码来解压缩文件";
-			break;
-		case ZR_ARGS:
-			return "参数错误";
-			break;
-		case ZR_NOTMMAP:
-			return "尝试ZipGetMemory 但这只适用于MMap ZIP文件";
-			break;
-		case ZR_MEMSIZE:
-			return "内存不足";
-			break;
-		case ZR_FAILED:
-			return "调用此函数时该操作已失败";
-			break;
-		case ZR_ENDED:
-			return "压缩文件创建已关闭";
-			break;
-		case ZR_MISSIZE:
-			return "显示的输入文件大小错误";
-			break;
-		case ZR_PARTIALUNZ:
-			return "文件已经部分解压缩";
-			break;
-		case ZR_ZMODE:
-			return "尝试混合创建/打开压缩文件";
-			break;
-		default:
-			return "未定义的标识符";
-			break;
-		}
 	}
 
 	Json::Value getJSON(std::string fn)

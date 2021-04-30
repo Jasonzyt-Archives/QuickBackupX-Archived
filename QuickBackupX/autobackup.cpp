@@ -33,6 +33,11 @@ namespace QuickBackupX
 	{
 		if (this->is_on)
 		{
+			if (this->cancel)
+			{
+				this->cancel = false;
+				return false;
+			}
 			vector<time_t>::iterator iter = this->time.begin();
 			for (; iter != this->time.end(); iter++)
 			{
@@ -50,10 +55,9 @@ namespace QuickBackupX
 					{
 						rec->GetOldestRecord(AutoBak_Type)->Delete(exer);
 					}
-					Backup* bak = new Backup;
-					thread runbak(&Backup::Make, bak, exer);
+					unique_ptr<Backup> bak(new Backup("自动备份"));
+					thread runbak(&Backup::Make, bak.get(), exer);
 					runbak.detach();
-					//delete bak;
 					return true;
 				}
 			}

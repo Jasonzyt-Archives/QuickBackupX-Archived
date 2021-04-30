@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="mod.cpp" />
+    <ClCompile Include="..\QuickBackupX\backup.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\config.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\func.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\json.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\logger.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\md5.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\pch.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\json\json_value.cpp">
+      <Filter>QBX\JsonCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\json\json_writer.cpp">
+      <Filter>QBX\JsonCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\properties.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\json\json_reader.cpp">
+      <Filter>QBX\JsonCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\file.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\autobackup.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\qbzip.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\bundle\bundle.cpp">
+      <Filter>QBX\Bundle</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="QBX">
+      <UniqueIdentifier>{a9d4a80a-2edf-479b-88be-468c5cc26c4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="QBX\JsonCPP">
+      <UniqueIdentifier>{bcf0164c-fe07-4468-9827-d00eb2360ffb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="QBX\Bundle">
+      <UniqueIdentifier>{15e790c3-bc7f-4176-945e-4cab38cd1f04}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\QuickBackupX\chakra.lib">
+      <Filter>QBX</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\QuickBackupX\bds.hpp">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\json\json.h">
+      <Filter>QBX\JsonCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\autobackup.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\backup.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\config.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\file.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\func.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\json.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\logger.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\md5.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\pch.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\properties.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\qbzip.h">
+      <Filter>QBX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\QuickBackupX\bundle\bundle.h">
+      <Filter>QBX\Bundle</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\QuickBackupX\json\json_valueiterator.inl">
+      <Filter>QBX\JsonCPP</Filter>
+    </None>
+  </ItemGroup>
+</Project>

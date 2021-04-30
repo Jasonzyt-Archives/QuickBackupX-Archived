@@ -10,13 +10,20 @@
 #include "pch.h"
 #include "logger.h"
 #include "config.h"
-#include "json.h"
+#include "record.h"
 #include "func.h"
 #include "backup.h"
 #include "json/json.h"
 #include "bds.hpp"
 #include "autobackup.h"
 #include "qbzip.h"
+#include <mc/Command/CommandReg.h>
+#include <mc/Command/Command.h>
+#include <mc/Player.h>
+#include <loader/Loader.h>
+#include <api/commands.h>
+#include <api/types/types.h>
+#include <api/Basic_Event.h>
 #include <shellapi.h>
 #pragma warning(disable:4996)
 
@@ -32,29 +39,519 @@ namespace QuickBackupX
 	map<Player*, bool> PlayerOnline;
 	map<string, Player*> PlayerUuid;
 	map<string, bool> PlayerIsOnline;
+	map<string, string> PlayerXuid;
 	map<unsigned, bool> fids;
 	int OnlineQuan = 0;
 
 	Logger* log = new Logger;
 	Config* cfg = new Config;
-	BRecJson* rec = new BRecJson;
+	BRecord* rec = new BRecord;
 	AutoBackup* ab = new AutoBackup;
 
 	void dll_init();
 	void dll_exit();
-	void RunAutoBackup();
+	void RunAutoBackup()
+	{
+		L_INFO("AutoBackup线程开始...");
+		while (true)
+		{
+			ab->Run(); // 每分钟试图执行一次
+			this_thread::sleep_for(chrono::milliseconds(60000));
+		}
+	}
+	bool MakeBackup(Backup* bak, Backup::Executor exer)
+	{
+		bool rv = bak->Make(exer);
+		delete bak;
+		return rv;
+	}
+
+#pragma region Command_Helper
+	string cmd_helper_nc = R"(QuickBackupX Command Helper
+前往https://github.com/Jasonzyt/QuickBackupX/wiki查看命令详解体验更佳
+## `make`
+执行一次备份操作
+### 语法
+1. `qb make [note: string]` 
+### 参数
+- 参数1-1: 备份备注
+  - 类型 `字符串`
+  - 省略 可(默认为"这是一个备份")
+## `list`
+列出备份
+### 语法
+1. `qb list [page: int]` 
+### 参数
+- 参数1-1: 页数(每页的数量取决于配置)
+  - 类型 `整数类型`
+  - 省略 可(默认为1)
+## `view` ???
+## `del`
+删除备份
+### 语法
+1. `qb del [id: int]` 逐个删除备份
+2. `qb del all` 删除所有备份
+### 参数
+- 参数1-1: 备份序号
+  - 类型 `整数`
+  - 省略 不可
+## `auto`
+### 语法
+1. `qb auto [auto_op: enum]`
+2. ???
+### 参数
+- 参数1-1: 自动备份操作类型
+  - 类型 `枚举`
+  - 省略 可(默认为query)
+  - 可选值 on(开启),off(关闭),list(列出详情),query(查询)
+## `help`
+获取帮助(≈`help qb`)
+### 语法
+1. `qb help`)";
+#pragma endregion
+
+#pragma region Command_ENUMS
+	enum class Auto_Operation_1 : int
+	{
+		off = 1, 
+		on = 2,
+		list = 3,
+		cancel = 4
+	};
+	enum class Auto_Operation_2 : int
+	{
+		add = 1
+	};
+	enum class QBCMD_1 : int
+	{
+		Help = 1, // qb help
+		Reld = 2, // qb reload
+		Del_All = 3
+	};
+	enum class QBCMD_2I1 : int 
+	{
+		View = 1, // qb view [Order Num: int]
+		Del  = 2, // qb del  [Order Num: int]
+	};
+	enum class QBCMD_2I2 : int 
+	{
+		List = 1, // qb list [Order Num: int]
+	};
+	enum class QBCMD_2S : int
+	{
+		Make = 1  // qb make <Note: string>
+	};
+	enum class QBCMD_2A : int
+	{
+		Auto = 1  // qb auto <Operate: Auto_Operation_1>
+	};
+	enum class QBCMD_3 : int
+	{
+		Auto = 1  // qb auto <Operate: Auto_Operation_1> <Time: string>
+	};
+	enum class QBCMD_4 : int
+	{
+		Back = 1  // qb back [Order Num: int] [DelSrc: bool] [DelLvl: bool]
+	};
+#pragma endregion
+
+#pragma region Command_Functions
+	namespace QBCMD
+	{
+		bool MakeCmd(CommandOrigin const& ori, CommandOutput& outp, string note = "")
+		{
+			Backup::Executor exer;
+			if (note.size() >= 200)
+			{
+				outp.error("备注字数超过限制!!! 已清空备注");
+				note.clear();
+			}
+			switch (ori.getOriginType())
+			{
+			case OriginType::Player:
+			{
+				string pnam = ori.getName();
+				exer.type = Player_Type;
+				exer.pname = pnam;
+				exer.pxuid = PlayerXuid[pnam];
+				thread mkbackup(&MakeBackup, new Backup(note), exer);
+				mkbackup.detach();
+				break;
+			}
+			case OriginType::DedicatedServer:
+			{
+				exer.type = Console_Type;
+				thread mkbackup(&MakeBackup, new Backup(note), exer);
+				mkbackup.detach();
+				break;
+			}
+			case OriginType::Block:
+			{
+				exer.type = Block_Type;
+				::BlockPos bp = ori.getBlockPosition();
+				int dimid = dAccess<int, 216>(ori.getDimension());
+				ori.getDimension();
+				Backup::Executor exer;
+				exer.type = Block_Type;
+				exer.cbpos = to_string(dimid) + ":" + bp.toString(); // 1:0,0,0 地狱0,0,0处
+				thread mkbackup(&MakeBackup, new Backup(note), exer);
+				mkbackup.detach();
+				break;
+			}
+			}
+		}
+		bool ReldCmd(CommandOrigin const& ori, CommandOutput& outp)
+		{
+			switch (ori.getOriginType())
+			{
+			case OriginType::Player:
+			{
+				outp.error("§c您没有权限执行此操作!!! 此操作所需最低权限:Console");
+				break;
+			}
+			case OriginType::DedicatedServer:
+			{
+				if (cfg->getConfig())
+				{
+					ab->Init();
+					rec->RefrashRecord();
+					outp.success("配置重载成功!");
+					L_INFO("配置重载成功!");
+				}
+				else
+				{
+					outp.error("配置重载失败: " + CONFIGFILE + "无法打开!!!");
+					L_INFO("配置重载失败!");
+				}
+				break;
+			}
+			}
+			return true;
+		}
+		bool ListCmd(CommandOrigin const& ori, CommandOutput& outp, int page)
+		{
+			// TODO: 自定义格式化输出
+			switch (ori.getOriginType())
+			{
+			case OriginType::Player:
+			{
+				ostringstream out;
+				if (cfg->lops <= 0)
+				{
+					for (auto& it : rec->blist)
+					{
+						out << "§e- 备份[" << it->id + 1 << "] " << it->time << " " << SizeToString(it->size) << endl;
+					}
+					outp.success(out.str());
+					return true;
+				}
+				int lpages = cfg->lops;
+				double v1 = (rec->blist.size() / SC(double, lpages));
+				int page_quan = v1 + 0.99999999;
+				if (page > page_quan) page = page_quan;
+				if (page_quan == 0)
+				{
+					outp.error("§c无备份!!! 输入 \"qb make\" 创建一个备份");
+					return false;
+				}
+				int startline = lpages * (page - 1);
+				int endline = lpages * page - 1;
+				out << "§b========================= 备份列表 第 " << page << "/" << page_quan << " 页 共 " << rec->blist.size() << " 个备份 =========================" << endl;
+				for (int iter = startline; iter <= endline && iter <= rec->blist.size() - 1; iter++)
+				{
+					out << "§e- 备份[" << iter + 1 << "] " << rec->blist[iter]->time << " " << SizeToString(rec->blist[iter]->size) << endl;
+				}
+				out << "§b========================= 备份列表 第 " << page << "/" << page_quan << " 页 共 " << rec->blist.size() << " 个备份 =========================" << endl;
+				outp.success(out.str());
+				break;
+			}
+			case OriginType::DedicatedServer:
+			{
+				ostringstream out;
+				if (cfg->lops <= 0)
+				{
+					for (auto& it : rec->blist)
+					{
+						out << "- 备份[" << it->id << "] " << it->time << " " << SizeToString(it->size) << endl;
+					}
+					outp.success(out.str());
+					return true;
+				}
+				int lpages = cfg->lops;
+				double v1 = (rec->blist.size() / SC(double, lpages));
+				int page_quan = v1 + 0.99999999;
+				if (page > page_quan) page = page_quan;
+				if (page_quan == 0)
+				{
+					outp.error("无备份!!! 输入 \"qb make\" 创建一个备份");
+					return false;
+				}
+				int startline = lpages * (page - 1);
+				int endline = lpages * page - 1;
+				out << "========================= 备份列表 第 " << page << "/" << page_quan << u8" 页 共 " << rec->blist.size() << u8" 个备份 =========================" << endl;
+				for (int iter = startline; iter <= endline && iter <= rec->blist.size() - 1; iter++)
+				{
+					out << "- 备份[" << iter + 1 << "] " << rec->blist[iter]->time << " " << SizeToString(rec->blist[iter]->size) << endl;
+				}
+				out << "========================= 备份列表 第 " << page << "/" << page_quan << u8" 页 共 " << rec->blist.size() << u8" 个备份 =========================" << endl;
+				outp.success(out.str());
+				break;
+			}
+			}
+			return true;
+		}
+		bool DeleteCmd(CommandOrigin const& ori, CommandOutput& outp, int id)
+		{
+			Backup::Executor exer;
+			switch (ori.getOriginType())
+			{
+			case OriginType::DedicatedServer:
+				exer.type = Console_Type;
+				if (id >= rec->blist.size())
+				{
+					outp.error("找不到备份[" + to_string(id) + "]!发送\"qb list\"查看当前的备份");
+					L_ERROR("- 执行失败!");
+					return false;
+				}
+				rec->blist[(id - 1)]->Delete(exer);
+				break;
+			case OriginType::Player:
+				string pnam = ori.getName();
+				exer.type = Player_Type;
+				exer.pname = pnam;
+				exer.pxuid = PlayerXuid[pnam];
+				if (id >= rec->blist.size())
+				{
+					outp.error("§c找不到备份[" + to_string(id) + "]!发送\"qb list\"查看当前的备份");
+					L_ERROR("- 执行失败!");
+					return false;
+				}
+				rec->blist[(id - 1)]->Delete(exer);
+			}
+		}
+		bool DeleteAllCmd(CommandOrigin const& ori, CommandOutput& outp)
+		{
+			switch (ori.getOriginType())
+			{
+			case OriginType::DedicatedServer:
+			{
+				Backup::Executor exer;
+				exer.type = Console_Type;
+				if (rec->blist.size() == 0)
+				{
+					outp.error("无备份!!! 输入 \"qb make\" 创建一个备份");
+					return false;
+				}
+				outp.addMessage("您正在执行删除全部备份!");
+				L_WARNING("执行删除全部备份...");
+				vector<Backup*> blist = rec->blist;
+				for (auto& it : blist)
+				{
+					int id = it->id;
+					outp.addMessage("删除备份[" + to_string(id) + "]...");
+					it->Delete(exer);
+				}
+				outp.success("删除完成!");
+				L_INFO(u8"删除完成!");
+				break;
+			}
+			case OriginType::Player:
+				outp.error("§c您没有权限执行此操作!!! 此操作所需最低权限:Console");
+			}
+			return true;
+		}
+		bool AutoCmdQuery(CommandOrigin const& ori, CommandOutput& outp)
+		{
+			switch (ori.getOriginType())
+			{
+			case OriginType::DedicatedServer:
+				outp.success(string("当前的备份状态为: ") + (ab->is_on ? "On" : "Off"));
+				break;
+			case OriginType::Player:
+				outp.success(string("§b当前的备份状态为: ") + (ab->is_on ? "§aOn" : "§cOff"));
+				break;
+			}
+			return true;
+		}
+		bool AutoCmdOp(CommandOrigin const& ori, CommandOutput& outp, bool ison)
+		{
+			switch (ori.getOriginType())
+			{
+			case OriginType::DedicatedServer:
+				ab->is_on = ison;
+				AutoCmdQuery(ori, outp);
+				break;
+			case OriginType::Player:
+				ab->is_on = ison;
+				AutoCmdQuery(ori, outp);
+				break;
+			}
+			return true;
+		}
+		bool AutoCmdList(CommandOrigin const& ori, CommandOutput& outp)
+		{
+		/*	这部分先咕了
+			ostringstream osstr;
+			osstr << u8"当前的备份状态为: " << (ab->is_on ? "On" : "Off") << endl
+				<< u8"将会在以下时间执行自动备份: ";
+			for (auto& _t : ab->time)
+			{
+				tm* ltime = localtime(&_t);
+				osstr << ltime->tm_hour << ":" << ltime->tm_min << " ";
+			}
+			osstr << endl;
+			if (ab->is_on)
+			{
+				tm tmnow;
+				vector<int> dtres;
+				tmnow.tm_hour = ab->getLocalHour();
+				tmnow.tm_min = ab->getLocalMinute();
+				time_t tmtn = mktime(&tmnow);
+				for (auto& _t1 : ab->time)
+				{
+					dtres.push_back(difftime(tmtn, _t1));
+				}
+				sort(dtres.begin(), dtres.end());
+				int h = dtres[0] / 60 / 60;
+				int m = dtres[0] - 60 * h;
+				osstr << u8"距离下次自动备份还有: " << h << u8" 小时 " << m << u8" 分钟" << endl;
+			}
+			cout << osstr.str();
+		*/
+			switch (ori.getOriginType())
+			{
+			case OriginType::DedicatedServer:
+				break;
+			case OriginType::Player:
+				break;
+			}
+		}
+		bool HelpCmd(CommandOrigin const& ori, CommandOutput& outp)
+		{
+			// 咕咕咕
+		}
+#pragma endregion
+
+#pragma region Command_Register
+		bool onCMD_0(CommandOrigin const& ori, CommandOutput& outp) {}
+		bool onCMD_1(CommandOrigin const& ori, CommandOutput& outp, MyEnum<QBCMD_1>& op) 
+		{
+			switch (op.val)
+			{
+			case QuickBackupX::QBCMD_1::Help:
+				outp.success(cmd_helper_nc);
+				break;
+			case QuickBackupX::QBCMD_1::Reld:
+				ReldCmd(ori, outp);
+				break;
+			case QuickBackupX::QBCMD_1::Del_All:
+				DeleteAllCmd(ori, outp);
+				break;
+			}
+			return true;
+		}
+		bool onCMD_2S(CommandOrigin const& ori, CommandOutput& outp, MyEnum<QBCMD_2S>& op, optional<string>& pstr)
+		{
+			switch (op.val)
+			{
+			case QuickBackupX::QBCMD_2S::Make:
+				if (!pstr.set) MakeCmd(ori, outp);
+				else MakeCmd(ori, outp, pstr.val());
+				break;
+			}
+			return true;
+		}
+		bool onCMD_2I1(CommandOrigin const& ori, CommandOutput& outp, MyEnum<QBCMD_2I1>& op, int& pint)
+		{
+			switch (op)
+			{
+			case QuickBackupX::QBCMD_2I1::View:
+				outp.addMessage("唔...此功能还在开发中呢");
+				break;
+			case QuickBackupX::QBCMD_2I1::Del:
+				DeleteCmd(ori, outp, pint);
+				break;
+			}
+			return true;
+		}
+		bool onCMD_2I2(CommandOrigin const& ori, CommandOutput& outp, MyEnum<QBCMD_2I2>& op, optional<int>& pint)
+		{
+			switch (op)
+			{
+			case QuickBackupX::QBCMD_2I2::List:
+				if (pint.set == false) ListCmd(ori, outp, 1);
+				else ListCmd(ori, outp, pint.val());
+				break;
+			}
+			return true;
+		}
+		bool onCMD_2A(CommandOrigin const& ori, CommandOutput& outp, MyEnum<QBCMD_2A>& op, MyEnum<Auto_Operation_1>& ao)
+		{
+			switch (op)
+			{
+			case QBCMD_2A::Auto:
+			{
+				switch (ao)
+				{
+				case Auto_Operation_1::on:
+					AutoCmdOp(ori, outp, true);
+					break;
+				case Auto_Operation_1::off:
+					AutoCmdOp(ori, outp, false);
+					break;
+				case Auto_Operation_1::cancel:
+					ab->cancel = true;
+					break;
+				}
+				break;
+			}
+			}
+			return true;
+		}
+		bool onCMD_Test(CommandOrigin const& ori, CommandOutput& outp)
+		{
+			QBZIP qz1("./testAdd.zip");
+			qz1.Init();
+			qz1.Add("./test.txt", "114514\n1919810");
+			qz1.Add("./test2.txt", "啊2114514\n1919810");
+			qz1.Save();
+			outp.addMessage("Test FUNC[QBZIP::Add] Done");
+			QBZIP qz2("./testAddFile.zip");
+			qz2.Init();
+			qz2.AddFile("./test.new.txt", "test.new.txt");
+			qz2.AddFile("./usage.txt", "usage.txt");
+			qz2.AddFile("./server.properties", "server.properties");
+			qz2.Save();
+			outp.addMessage("Test FUNC[QBZIP::AddFile] Done");
+			FList fl;
+			fl.insert(pair<string, string>("usage.txt", "usage.txt"));
+			fl.insert(pair<string, string>("RoDB.exe", "RoDB.exe"));
+			fl.insert(pair<string, string>("QuickBackupX/qbx.log", "qbx/qbx.log"));
+			QBZIP qz3("./testAddFList.zip");
+			qz3.Init();
+			qz3.AddFList(fl);
+			qz3.Save();
+		}
+	}
+#pragma endregion
 
 	void dll_init()
 	{
 		PR(u8"QuickBackupX Loaded! Author: JasonZYT");
-		cout << u8R"(
-   ___        _      _    ____             _              __  __
+		cout << 
+u8R"(   ___        _      _    ____             _              __  __
   / _ \ _   _(_) ___| | _| __ )  __ _  ___| | ___   _ _ __\ \/ /
  | | | | | | | |/ __| |/ /  _ \ / _` |/ __| |/ / | | | '_ \\  / 
  | |_| | |_| | | (__|   <| |_) | (_| | (__|   <| |_| | |_) /  \ 
   \__\_\\____|_|\___|_|\_\____/ \__,_|\___|_|\_\\____| .__/_/\_\
                                                      |_|        
 )" << endl;
+		log->Open();
+		log->Start();
+		cfg->getConfig();
+		rec->blist = move(rec->ListRecord());
+		ab->Init();
+#pragma region File_Check
 		if (!filesystem::exists("./QuickBackupX/"))
 		{
 			if (filesystem::create_directory(filesystem::path("./QuickBackupX/")))
@@ -70,18 +567,11 @@ namespace QuickBackupX
 				throw 100;
 			}
 		}
-		// 全局对象初始化
-		log->Open();
-		log->Start();
-		cfg->getConfig();
-		rec->blist = rec->ListRecord();
-		ab->Init();
 		ofstream eula;
-		eula.open(EULAFILE, ios::app | ios::out);
-		L_INFO("创建EULA.txt...");
+		eula.open(EULAFILE, ios::ate | ios::out);
 		if (!eula.is_open())
 		{
-			L_ERROR(string("无法创建文件: ") + EULAFILE);
+			L_ERROR(string("无法打开文件: ") + EULAFILE);
 			Sleep(3000);
 			throw 102;
 			return;
@@ -139,16 +629,40 @@ Copyright (C)2020-2021 JasonZYT
 				throw 100;
 			}
 		}
+#pragma endregion
+		Event::addEventListener([](RegCmdEV ev) {
+			CMDREG::SetCommandRegistry(ev.CMDRg);
+			CEnum<QBCMD_1> _1("QBCMD1", { "help","reload" });
+			CEnum<QBCMD_3> _3("QBCMD3", { "auto" });
+			CEnum<QBCMD_4> _4("QBCMD4", { "back" });
+			CEnum<QBCMD_2S> _2a("QBCMD2S", { "make" });
+			CEnum<QBCMD_2A> _2c("QBCMD2A", { "auto" });
+			CEnum<QBCMD_2I1> _2b("QBCMD2I1", { "del","view" });
+			CEnum<QBCMD_2I2> _2e("QBCMD2I2", { "list" });
+			CEnum<Auto_Operation_1> _a1("Auto_1", { "on","off","list","cancel" });
+			CEnum<Auto_Operation_2> _a2("Auto_2", { "add" });
+			MakeCommand("qb", "QuickBackupX Plugin Command", 0);
+			CmdOverload(qb, QBCMD::onCMD_1, "CMD");
+			CmdOverload(qb, QBCMD::onCMD_2A, "CMD", "aop1");
+			CmdOverload(qb, QBCMD::onCMD_2S, "CMD", "note");
+			CmdOverload(qb, QBCMD::onCMD_2I1, "CMD", "id");
+			CmdOverload(qb, QBCMD::onCMD_2I2, "CMD", "page");
+			MakeCommand("qb_test", "QuickBackupX Plugin Debug(Test) Command", 4);
+			CmdOverload(qb_test, QBCMD::onCMD_Test);
+		});
 		ab->is_on = cfg->aoab;
 		thread thab(&RunAutoBackup);
 		thab.detach();
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-		PR(u8"感谢 TISUnion(https://www.github.com/TISUnion/QuickBackupM) 的灵感支持");
-		PR(u8"感谢 Bundle库(https://github.com/r-lyeh-archived/bundle) 的代码支持");
-		PR(u8"感谢 JsonCPP库(https://github.com/open-source-parsers/jsoncpp) 的代码支持");
-		PR(u8"感谢 OpenSSL库(https://github.com/openssl/openssl) 的代码支持");
+		cout << "感谢 TISUnion(https://www.github.com/TISUnion/QuickBackupM) 的灵感支持" << endl;
+		cout << "感谢 Bundle库(https://github.com/r-lyeh-archived/bundle) 的代码支持" << endl;
+		cout << "感谢 LiteLoader(https://github.com/LiteLDev) 的代码支持" << endl;
+		cout << "感谢 dreamguxiang(https://github.com/dreamguxiang) 的代码支持" << endl;
+		cout << "感谢 JsonCPP库(https://github.com/open-source-parsers/jsoncpp) 的代码支持" << endl;
+		cout << "感谢 OpenSSL库(https://github.com/openssl/openssl) 的代码支持" << endl;
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-		PR(u8"插件已启动(Version " << QBXVERSION << u8" #" << QBXVERSIONTAG << u8"##BDXC&BDX Edition#)(GitHub Repository:https://www.github.com/ST-SKYTown/QuickBackupX)");
+		cout << "插件已启动(Version " << QBXVERSION << " #" << QBXVERSIONTAG << "##BDXC Edition#)" << endl;
+		cout << "Plugin GitHub Repository:https://www.github.com/Jasonzyt/QuickBackupX)" << endl;
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
 	}
 
@@ -160,662 +674,7 @@ Copyright (C)2020-2021 JasonZYT
 		delete cfg;
 		delete ab;
 	}
-
-	void RunAutoBackup()
-	{
-		L_INFO("AutoBackup线程开始...");
-		while (true)
-		{
-			ab->Run(); // 每分钟试图执行一次
-			this_thread::sleep_for(chrono::milliseconds(60000));
-		}
-	}
 	
-#pragma region Command_Parse
-
-	enum class QBCMDT : int
-	{
-		ERRPAR6 = -6,
-		ERRPAR5,
-		ERRPAR4,
-		ERRPAR3,
-		ERRPAR2,
-		ERRPAR1,
-		Other,
-		Unknown,
-
-		Make,
-		List,
-		Help,
-		Del,
-		Reload,
-		Back,
-		Auto
-	};
-
-	enum class QBCMDParam : int
-	{
-		string, _int, _bool, null, on_off, time
-	};
-	
-	struct QBCMD
-	{
-		QBCMDT type = QBCMDT::Unknown;
-		vector<string> params;
-		QBCMDParam ParamType(int pnum)
-		{
-			string param = params[pnum];
-			regex reg("^([0-9]+)$");
-			regex reg1("^(([1-9]{1})|([0-1][0-9])|([1-2][0-3])):([0-5][0-9])$");
-			if (regex_match(param, reg))
-				return QBCMDParam::_int;
-			else if (param == "true" || param == "false")
-				return QBCMDParam::_bool;
-			else if (param == "on" || param == "off")
-				return QBCMDParam::on_off;
-			else if (regex_match(param,reg1))
-				return QBCMDParam::time;
-			else if (param == "")
-				return QBCMDParam::null;
-			return QBCMDParam::string;
-		}
-	};
-
-	QBCMD CMDCheck(string cmd, Backup::Executor exer)
-	{
-		QBCMD rv;
-		vector<string> params = split(cmd);
-		int paramsize = params.size();
-		if (paramsize == 0)
-		{
-			rv.type = QBCMDT::Other;
-			return rv;
-		}
-		rv.params = params;
-		if (params[0] == "qb")
-		{
-			if (paramsize == 1)
-			{
-				rv.type = QBCMDT::Help;
-				return rv;
-			}
-			if (params[1] == "make")
-			{
-				if (paramsize == 2) rv.type = QBCMDT::Make;
-				else
-				{
-					If_Console{ PRERR(u8"意外的 " << params[2] << u8" 出现在 " << cmd); }
-					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[2] + " 出现在 " + cmd); }
-					L_ERROR(string("- 意外的 ") + params[2] + " 出现在 " + cmd);
-					rv.type = QBCMDT::ERRPAR2;
-				}
-			}
-			else if (params[1] == "list")
-			{
-				if (paramsize == 2) rv.type = QBCMDT::List;
-				else if (paramsize > 3)
-				{
-					If_Console{ PRERR(u8"意外的 " << params[4] << u8" 出现在 " << cmd); }
-					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[4] + " 出现在 " + cmd); }
-					L_ERROR(string("- 意外的 ") + params[4] + " 出现在 " + cmd);
-					rv.type = QBCMDT::ERRPAR3;
-				}
-				else if (rv.ParamType(2) == QBCMDParam::_int) rv.type = QBCMDT::List;
-				else {
-					If_Console{ PRERR(u8"参数 [page: int](页码) 不合法!"); }
-					If_Player{ sendText(exer.pname, "§c参数 [page: int](页码) 不合法!"); }
-					L_ERROR("参数 [page: int](页码) 不合法!");
-					rv.type = QBCMDT::ERRPAR2;
-				}
-			}
-			else if (params[1] == "del")
-			{
-				if (paramsize == 2)
-				{
-					If_Console{ PRERR(u8"参数 [onum: int](序号) 不合法!"); }
-					If_Player{ sendText(exer.pname, "§c参数 [onum: int](序号) 不合法!"); }
-					L_ERROR("参数 [onum: int](序号) 不合法!");
-					rv.type = QBCMDT::ERRPAR2;
-				}
-				else if (paramsize == 3 && rv.ParamType(2) == QBCMDParam::_int) rv.type = QBCMDT::Del;
-				else if (paramsize == 3 && params[2] == "all") rv.type = QBCMDT::Del;
-				else if (paramsize == 3)
-				{
-					If_Console{ PRERR(u8"参数 [onum: int](序号) 不合法!"); }
-					If_Player{ sendText(exer.pname, "§c参数 [onum: int](序号) 不合法!"); }
-					L_ERROR("参数 [onum: int](序号) 不合法!");
-					rv.type = QBCMDT::ERRPAR2;
-				}
-				else
-				{
-					If_Console{ PRERR(u8"意外的 " << params[4] << u8" 出现在 " << cmd); }
-					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[4] + " 出现在 " + cmd); }
-					L_ERROR(string("- 意外的 ") + params[4] + " 出现在 " + cmd);
-					rv.type = QBCMDT::ERRPAR3;
-				}
-			}
-			else if (params[1] == "reload")
-			{
-				if (paramsize == 2) rv.type = QBCMDT::Reload;
-				else
-				{
-					If_Console{ PRERR(u8"意外的 " << params[2] << u8" 出现在 " << cmd); }
-					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[2] + " 出现在 " + cmd); }
-					L_ERROR(string("- 意外的 ") + params[2] + " 出现在 " + cmd);
-					rv.type = QBCMDT::ERRPAR2;
-				}
-			}
-			else if (params[1] == "help")
-			{
-				if (paramsize == 2) rv.type = QBCMDT::Help;
-				else
-				{
-					If_Console{ PRERR(u8"意外的 " << params[2] << u8" 出现在 " << cmd); }
-					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[2] + " 出现在 " + cmd); }
-					L_ERROR(string("- 意外的 ") + params[2] + " 出现在 " + cmd);
-					rv.type = QBCMDT::ERRPAR2;
-				}
-			}
-			else if (params[1] == "back")
-			{
-				if (paramsize == 2)
-				{
-					If_Console{ PRERR(u8"参数 [onum: int](序号) 不合法!"); }
-					If_Player{ sendText(exer.pname, "§c参数 [onum: int](序号) 不合法!"); }
-					L_ERROR("参数 [onum: int](序号) 不合法!");
-					rv.type = QBCMDT::ERRPAR2;
-				}
-				else if (paramsize == 3)
-				{
-					if (rv.ParamType(2) != QBCMDParam::_int)
-					{
-						If_Console{ PRERR(u8"参数 [onum: int](序号) 不合法!"); }
-						If_Player{ sendText(exer.pname, "§c参数 [onum: int](序号) 不合法!"); }
-						L_ERROR("参数 [onum: int](序号) 不合法!");
-						rv.type = QBCMDT::ERRPAR3;
-					}
-					else QBCMDT::Back;
-				}
-				else if (paramsize == 4)
-				{
-					if (rv.ParamType(2) != QBCMDParam::_int)
-					{
-						If_Console{ PRERR(u8"参数 [onum: int](序号) 不合法!"); }
-						If_Player{ sendText(exer.pname, "§c参数 [onum: int](序号) 不合法!"); }
-						L_ERROR("参数 [onum: int](序号) 不合法!");
-						rv.type = QBCMDT::ERRPAR3;
-					}
-					else if (rv.ParamType(3) != QBCMDParam::_bool)
-					{
-						If_Console{ PRERR(u8"参数 [delsrc: bool](是否删除源) 不合法!"); }
-						If_Player{ sendText(exer.pname, "§c参数 [delsrc: bool](是否删除源) 不合法!"); }
-						L_ERROR("参数 [delsrc: bool](是否删除源) 不合法!");
-						rv.type = QBCMDT::ERRPAR4;
-					}
-					else QBCMDT::Back;
-				}
-				else if (paramsize == 5)
-				{
-					if (rv.ParamType(2) != QBCMDParam::_int)
-					{
-						If_Console{ PRERR(u8"参数 [onum: int](序号) 不合法!"); }
-						If_Player{ sendText(exer.pname, "§c参数 [onum: int](序号) 不合法!"); }
-						L_ERROR("参数 [onum: int](序号) 不合法!");
-						rv.type = QBCMDT::ERRPAR3;
-					}
-					else if (rv.ParamType(3) != QBCMDParam::_bool)
-					{
-						If_Console{ PRERR(u8"参数 [delsrc: bool](是否删除源) 不合法!"); }
-						If_Player{ sendText(exer.pname, "§c参数 [delsrc: bool](是否删除源) 不合法!"); }
-						L_ERROR("参数 [delsrc: bool](是否删除源) 不合法!");
-						rv.type = QBCMDT::ERRPAR4;
-					}
-					else if (rv.ParamType(4) != QBCMDParam::_bool)
-					{
-						If_Console{ PRERR(u8"参数 [delevel: bool](是否删除存档) 不合法!"); }
-						If_Player{ sendText(exer.pname, "§c参数 [delevel: bool](是否删除存档) 不合法!"); }
-						L_ERROR("参数 [delevel: bool](是否删除存档) 不合法!");
-						rv.type = QBCMDT::ERRPAR5;
-					}
-					else QBCMDT::Back;
-				}
-				else
-				{
-					If_Console{ PRERR(u8"意外的 " << params[6] << u8" 出现在 " << cmd); }
-					If_Player{ sendText(exer.pname,string("§c意外的 ") + params[6] + " 出现在 " + cmd); }
-					L_ERROR(string("- 意外的 ") + params[6] + " 出现在 " + cmd);
-					rv.type = QBCMDT::ERRPAR6;
-				}
-			}
-			else if (params[1] == "auto")
-			{
-				if (paramsize == 2) rv.type = QBCMDT::Auto;
-				else if (params[2] == "add")
-				{
-					if (paramsize > 4)
-					{
-						If_Console{ PRERR(u8"意外的 " << params[4] << u8" 出现在 " << cmd); }
-						If_Player{ sendText(exer.pname,string("§c意外的 ") + params[4] + " 出现在 " + cmd); }
-						L_ERROR(string("- 意外的 ") + params[4] + " 出现在 " + cmd);
-						rv.type = QBCMDT::ERRPAR4;
-					}
-					else if (paramsize == 3)
-					{
-						If_Console{ PRERR(u8"参数 <time: string>(指定时间 HH:MM) 不合法!"); }
-						If_Player{ sendText(exer.pname, "§c参数 <time: string>(指定时间 HH:MM) 不合法!"); }
-						L_ERROR("参数 <time: string>(指定时间 HH:MM) 不合法!");
-						rv.type = QBCMDT::ERRPAR3;
-					}
-					else if (rv.ParamType(3) != QBCMDParam::time)
-					{
-						If_Console{ PRERR(u8"参数 <time: string>(指定时间 HH:MM) 不合法!"); }
-						If_Player{ sendText(exer.pname, "§c参数 <time: string>(指定时间 HH:MM) 不合法!"); }
-						L_ERROR("参数 <time: string>(指定时间 HH:MM) 不合法!");
-						rv.type = QBCMDT::ERRPAR3;
-					}
-					else rv.type = QBCMDT::Auto;
-				}
-				else if (params[2] == "list")
-				{
-					if (paramsize > 3)
-					{
-						If_Console{ PRERR(u8"意外的 " << params[3] << u8" 出现在 " << cmd); }
-						If_Player{ sendText(exer.pname,string("§c意外的 ") + params[3] + " 出现在 " + cmd); }
-						L_ERROR(string("- 意外的 ") + params[3] + " 出现在 " + cmd);
-						rv.type = QBCMDT::ERRPAR3;
-					}
-					else rv.type = QBCMDT::Auto;
-				}
-				else if (rv.ParamType(2) == QBCMDParam::on_off)
-				{
-					rv.type = QBCMDT::Auto;
-				}
-				else
-				{
-					If_Console{ PRERR(u8"参数 <cmd: QBCMD_Auto>(Auto命令) 不合法!"); }
-					If_Player{ sendText(exer.pname, "§c参数 <cmd: QBCMD_Auto>(Auto命令) 不合法!"); }
-					L_ERROR("参数 <cmd: QBCMD_Auto>(Auto命令) 不合法!");
-					rv.type = QBCMDT::ERRPAR2;
-				}
-			}
-			else
-			{
-				If_Console{ PRERR(u8"参数 <cmd: QBCMDT>(命令) 不合法!"); }
-				If_Player{ sendText(exer.pname, "§c参数 <cmd: QBCMDT>(命令) 不合法!"); }
-				L_ERROR("参数 <cmd: QBCMDT>(命令) 不合法!");
-				rv.type = QBCMDT::ERRPAR1;
-			}
-		}
-		else
-		{
-			rv.type = QBCMDT::Other;
-		}
-		return rv;
-	}
-
-#pragma endregion
-
-	SYMHOOK(onServerCMD, bool, "??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$SPSCQueue@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@$0CAA@@@AEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z", VA _this, string* cmd)
-	{
-		string cmdstr = *cmd;
-		Backup::Executor exer;
-		exer.type = Console_Type;
-		QBCMD qcmd = CMDCheck(cmdstr, exer);
-		if (qcmd.type != QBCMDT::Other)
-		{
-			L_INFO(string("控制台执行了QB命令: ") + *cmd);
-			if (qcmd.type == QBCMDT::Make)
-			{
-				// Backup Main
-				Backup* bak = new Backup;
-				thread mkbackup(&Backup::Make, bak, exer); 
-				mkbackup.detach(); // "detach以后，子线程会成为孤儿线程，线程之间将无法通信"
-				//delete bak;
-				//bak->Make(exer);
-			}
-			else if (qcmd.type == QBCMDT::List)
-			{
-				int page;
-				if (qcmd.params.size() == 2) page = 1;
-				else page = atoi(qcmd.params[2].c_str());
-				int pag = 1;
-				if (page > 0) pag = page;
-				// List Main
-				vector<Backup*> baklist = rec->blist;
-				if (cfg->lops <= 0)
-				{
-					for (int iter = 0; iter <= baklist.size() - 1 ; iter++)
-					{
-						cout << u8"- 备份[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
-					}
-					return false;
-				}
-				int lpages = cfg->lops;
-				double v1 = (baklist.size() / SC(double, lpages));
-				int page_quan = v1 + 0.99999999;
-				if (pag > page_quan) pag = page_quan;
-				if (page_quan == 0)
-				{
-					PRWARN(u8"无备份!!! 输入 \"qb make\" 创建一个备份");
-					return false;
-				}
-				int startline = lpages * (pag - 1);
-				int endline = lpages * pag - 1;
-				cout << u8"========================= 备份列表 第 " << pag << "/" << page_quan << u8" 页 共 " << baklist.size() << u8" 个备份 =========================" << endl;
-				for (int iter = startline; iter <= endline && iter <= baklist.size() - 1; iter++)
-				{
-					cout << u8"- 备份[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
-				}
-				cout << u8"========================= 备份列表 第 " << pag << "/" << page_quan << u8" 页 共 " << baklist.size() << u8" 个备份 =========================" << endl;
-			}
-			else if (qcmd.type == QBCMDT::Del)
-			{
-				if (qcmd.params[2] == "all")
-				{
-					if (rec->blist.size() == 0)
-					{
-						PRWARN(u8"无备份!!! 输入 \"qb make\" 创建一个备份");
-						return false;
-					}
-					PRWARN(u8"您正在执行删除全部备份!");
-					L_WARNING("执行删除全部备份...");
-					for (int i = 0; i < rec->blist.size(); i++)
-					{
-						int onum = rec->blist[i]->onum;
-						PR(u8"删除备份[" << onum << "]...");
-						rec->blist[i]->Delete(exer);
-					}
-					PR(u8"删除完成!");
-					L_INFO(u8"删除完成!");
-					return false;
-				}
-				int onum = atoi(qcmd.params[2].c_str());
-				if (onum >= rec->blist.size())
-				{
-					PRERR(u8"找不到备份[" << onum << "]!发送\"qb list\"查看当前的备份");
-					L_ERROR("- 执行失败!");
-					return false;
-				}
-				rec->blist[(onum - 1)]->Delete(exer);
-			}
-			else if (qcmd.type == QBCMDT::Reload)
-			{
-				if (cfg->getConfig())
-				{
-					ab->Init();
-					PR(u8"配置重载成功!");
-					L_INFO("配置重载成功!");
-				}
-				else
-				{
-					PR(u8"配置重载失败: " << CONFIGFILE << "无法打开!!!");
-					L_INFO("配置重载失败!");
-				}
-			}
-			else if (qcmd.type == QBCMDT::Back)
-			{
-				
-			}
-			else if (qcmd.type == QBCMDT::Auto)
-			{
-				if (qcmd.params.size() == 2)
-				{
-					cout << u8"当前的备份状态为: " << (ab->is_on ? "On" : "Off") << endl;
-				}
-				else if (qcmd.params[2] == "on")
-				{
-					ab->is_on = true;
-					PR(u8"自动备份开启成功!");
-					L_INFO(u8"自动备份开启成功!");
-				}
-				else if (qcmd.params[2] == "off")
-				{
-					ab->is_on = false;
-					PR(u8"自动备份已关闭!");
-					L_INFO(u8"自动备份已关闭!");
-				}
-				else if (qcmd.params[2] == "list")
-				{
-					ostringstream osstr;
-					osstr << u8"当前的备份状态为: " << (ab->is_on ? "On" : "Off") << endl 
-						<< u8"将会在以下时间执行自动备份: ";
-					for (auto& _t : ab->time)
-					{
-						cout<<ctime(&_t);
-						//tm* ltime = localtime(&_t);
-						//osstr << ltime->tm_hour << ":" << ltime->tm_min << " ";
-					}
-					osstr << endl;
-					if (ab->is_on)
-					{
-						tm tmnow;
-						vector<int> dtres;
-						tmnow.tm_hour = ab->getLocalHour();
-						tmnow.tm_min = ab->getLocalMinute();
-						time_t tmtn = mktime(&tmnow);
-						for (auto& _t1 : ab->time)
-						{
-							dtres.push_back(difftime(tmtn, _t1));
-						}
-						sort(dtres.begin(), dtres.end());
-						int h = dtres[0] / 60 / 60;
-						int m = dtres[0] - 60 * h;
-						osstr << u8"距离下次自动备份还有: " << h << u8" 小时 " << m << u8" 分钟" << endl;
-					}
-					cout << osstr.str();
-				}
-			}
-			return false;
-		}
-		if (qcmd.params[0] == "qtest")
-		{
-			//Directory dir1(filesystem::path("./worlds/Bedrock level/"));
-			//dir1.copy_all_to("./backups/");
-			filesystem::copy("./worlds/", "./backups/");
-			Directory dir(filesystem::path("./backups/"));
-			QBZIP* qz = new QBZIP(filesystem::path("./ttest.zip"));
-			dir.dirlist();
-			qz->Add((FList)dir);
-			qz->Save();
-		}
-		if (qcmd.params[0] == "qtest1")
-		{
-			bundle::archive pak;
-			pak.resize(3);
-			pak[0]["name"] = "test.txt";
-			pak[0]["data"] = "hello world";
-			pak[1]["name"] = "test2.txt";
-			pak[1]["data"] = "1337";
-			pak[2]["name"] = "temp\\test.txt";
-			pak[2]["data"] = "1337";
-			string binary = pak.zip(100);
-			std::ofstream ofs("./test_123.zip", std::ios::out | std::ios::binary);
-			if (ofs)
-			{
-				ofs << binary;
-				ofs.close();
-			}
-		}
-		original(_this, cmd);
-	}
-	
-	SYMHOOK(onPlayerCMD, void, "?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@AEBVCommandRequestPacket@@@Z", VA _this, VA id, CommandRequestPacket* crp)
-	{
-		Player* pp = SYMCALL<Player*>("?_getServerPlayer@ServerNetworkHandler@@AEAAPEAVServerPlayer@@AEBVNetworkIdentifier@@E@Z", _this, id, *((char*)crp + 16));
-		string cmd = crp->toString();
-		Backup::Executor exer;
-		exer.type = Player_Type;
-		exer.pname = pp->getNameTag();
-		exer.pxuid = pp->getXuid(pxuid_level);
-		QBCMD qcmd = CMDCheck(cmd, exer);
-		if (qcmd.type != QBCMDT::Other)
-		{
-			L_INFO(string("玩家 ") + exer.pname + " 执行了QB命令: " + cmd);
-			TellAdmin(string("玩家 ") + exer.pname + " 执行了QB命令: " + cmd, exer.pxuid);
-			PR(string("玩家 ") + exer.pname + " 执行了QB命令: " + cmd);
-			if (qcmd.type == QBCMDT::Make)
-			{
-				// Backup Main
-				Backup* bak = new Backup;
-				thread mkbackup(&Backup::Make, bak, exer);
-				mkbackup.detach(); // "detach以后，子线程会成为孤儿线程，线程之间将无法通信"
-				//delete bak;
-				//bak->Make(exer);
-			}
-			else if (qcmd.type == QBCMDT::List)
-			{
-				int page;
-				if (qcmd.params.size() == 2) page = 1;
-				else page = atoi(qcmd.params[2].c_str());
-				int pag = 1;
-				if (page > 0) pag = page;
-				// List Main
-				ostringstream out;
-				vector<Backup*> baklist = rec->blist;
-				if (cfg->lops <= 0)
-				{
-					for (int iter = 0; iter <= baklist.size() - 1; iter++)
-					{
-						out << "§e- 备份[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
-					}
-					sendText(exer.pname, out.str());
-					return;
-				}
-				int lpages = cfg->lops; 
-				double v1 = (baklist.size() / SC(double, lpages));
-				int page_quan = v1 + 0.99999999;
-				if (pag > page_quan) pag = page_quan;
-				if (page_quan == 0)
-				{
-					sendText(exer.pname, "§c无备份!!! 输入 \"qb make\" 创建一个备份");
-					return;
-				}
-				int startline = lpages * (pag - 1);
-				int endline = lpages * pag - 1;
-				out << "§b========================= 备份列表 第 " << pag << "/" << page_quan << " 页 共 " << baklist.size() << " 个备份 =========================" << endl;
-				for (int iter = startline; iter <= endline && iter <= baklist.size() - 1; iter++)
-				{
-					out << "§e- 备份[" << iter + 1 << "] " << baklist[iter]->time << " " << SizeToString(baklist[iter]->size) << endl;
-				}
-				out << "§b========================= 备份列表 第 " << pag << "/" << page_quan << " 页 共 " << baklist.size() << " 个备份 =========================" << endl;
-				sendText(exer.pname, out.str());
-			}
-			else if (qcmd.type == QBCMDT::Del)
-			{
-				if (qcmd.params[2] == "all") sendText(exer.pname, "§c您没有权限执行该操作!");
-				int onum = atoi(qcmd.params[2].c_str());
-				if (onum >= rec->blist.size())
-				{
-					sendText(exer.pname, string("§c找不到备份[") + to_string(onum) + "]!发送\"qb list\"查看当前的备份");
-					L_ERROR("- 执行失败!");
-					return;
-				}
-				rec->blist[(onum - 1)]->Delete(exer);
-			}
-			else if (qcmd.type == QBCMDT::Reload)
-			{
-				sendText(exer.pname, "§c您没有权限执行该操作!");
-			}
-			else if (qcmd.type == QBCMDT::Back)
-			{
-
-			}
-			else if (qcmd.type == QBCMDT::Auto)
-			{
-				if (qcmd.params.size() == 2)
-				{
-					sendText(exer.pname, string("§b当前的备份状态为: ") + (ab->is_on ? "§aOn" : "§cOff"));
-				}
-				if (Is_Admin(exer.pname, exer.pxuid))
-				{
-					if (qcmd.params[2] == "on")
-					{
-						ab->is_on = true;
-						sendText(exer.pname, "自动备份开启成功!");
-						L_INFO(u8"自动备份开启成功!");
-					}
-					else if (qcmd.params[2] == "off")
-					{
-						ab->is_on = false;
-						sendText(exer.pname, "自动备份已关闭!");
-						L_INFO(u8"自动备份已关闭!");
-					}
-				}
-				else
-				{
-					PRWARN(u8"玩家 " << exer.pname << u8" 试图执行自动备份,但因无权限被拦截了");
-					L_WARNING(string("玩家 ") + exer.pname + "试图执行自动备份(无权限)");
-					TellAdmin(string("玩家 ") + exer.pname + "(无权限) 试图执行自动备份");
-					sendText(exer.pname, "§c您没有权限执行此操作!!!");
-				}
-			}
-			return;
-		}
-		original(_this, id, crp);
-	}
-
-	SYMHOOK(onCBCMD, bool, "?performCommand@CommandBlockActor@@QEAA_NAEAVBlockSource@@@Z",
-		VA _this, BlockSource* a2) {
-		//脉冲:0,重复:1,链:2
-		int mode = SYMCALL<int>("?getMode@CommandBlockActor@@QEBA?AW4CommandBlockMode@@AEAVBlockSource@@@Z",
-			_this, a2);
-		//无条件:0,有条件:1
-		bool condition = SYMCALL<bool>("?getConditionalMode@CommandBlockActor@@QEBA_NAEAVBlockSource@@@Z",
-			_this, a2);
-		string cmd = offset(string, _this + 264/*208*/);
-		//string rawname = offset(string, _this + 296);
-		BlockPos bp = offset(BlockPos, _this + 44);
-		int dim = a2->getDimensionId();
-		Backup::Executor exer;
-		exer.type = Block_Type;
-		exer.cbmode = (Backup::Executor::CBMode)mode;
-		exer.cbcdit = condition;
-		exer.cbpos = to_string(dim) + ":" + bp.toString(); // 1:0,0,0 地狱0,0,0处
-		QBCMD qcmd = CMDCheck(cmd, exer);
-		if (qcmd.type != QBCMDT::Other)
-		{
-			if (qcmd.type == QBCMDT::Make)
-			{
-				Backup* bak = new Backup;
-				thread mkbackup(&Backup::Make, bak, exer);
-				mkbackup.detach();
-				//delete bak;
-			}
-			return false;
-		}
-		original(_this, a2);
-	}
-
-	enum CommandFlag1 : uint8_t
-	{
-		None = 0x0,
-		Message = 0x20
-	};
-	enum CommandFlag2 : uint8_t {
-		Cheat = 0x0,
-		NoCheat = 0x40,
-	};
-	enum CommandPermissionLevel : char {
-		Normal = 0,
-		Privileged = 1,
-		AutomationPlayer = 2,
-		OperatorOnly = 3,
-		ConsoleOnly = 4
-	};
-	struct CommandRegistry
-	{
-		void registerCommand(string const& a, char const* b, char c, char d, char e)
-		{
-			SYMCALL<void>("?registerCommand@CommandRegistry@@QEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PEBDW4CommandPermissionLevel@@UCommandFlag@@3@Z", 
-				this, a, b, c, d, e);
-		}
-	};
-	SYMHOOK(FakeCommandReg, void, "?setup@ChangeSettingCommand@@SAXAEAVCommandRegistry@@@Z", CommandRegistry* _this)
-	{
-		_this->registerCommand("qb", "QuickBackupX插件命令", Normal, None, NoCheat);
-		return original(_this);
-	}
-
 	SYMHOOK(GetXuid, Player*, "??0Player@@QEAA@AEAVLevel@@AEAVPacketSender@@W4GameType@@AEBVNetworkIdentifier@@EVUUID@mce@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$unique_ptr@VCertificate@@U?$default_delete@VCertificate@@@std@@@8@55@Z", 
 		Player* _this, VA level, __int64 a3, int a4, __int64 a5, __int64 a6, void* xuid, 
 		std::string& strxuid, __int64* a9, __int64 a10, __int64 a11) 
@@ -843,10 +702,34 @@ Copyright (C)2020-2021 JasonZYT
 
 	SYMHOOK(onPlayerJoined, VA, "?onPlayerJoined@ServerScoreboard@@UEAAXAEBVPlayer@@@Z", VA a1, Player* p)
 	{
+		string pname = p->getNameTag();
+		string pxuid = p->getXuid(pxuid_level);
 		OnlineQuan++;
 		PlayerOnline[p] = true;
-		PlayerIsOnline[p->getNameTag()] = true;
+		PlayerIsOnline[pname] = true;
 		PlayerUuid[p->getUuid()->toString()] = p;
+		PlayerXuid[p->getNameTag()] = p->getXuid(pxuid_level);
+		for (auto& it : cfg->admins)
+		{
+			if (it.second.empty() && it.second == pxuid)
+			{
+				cfg->EditPermissionXuid(Config::PerType::Admin, pname, pxuid);
+			}
+		}
+		for (auto& it : cfg->backup)
+		{
+			if (it.second.empty() && it.second == pxuid)
+			{
+				cfg->EditPermissionXuid(Config::PerType::Backup, pname, pxuid);
+			}
+		}
+		for (auto& it : cfg->back)
+		{
+			if (it.second.empty() && it.second == pxuid)
+			{
+				cfg->EditPermissionXuid(Config::PerType::Back, pname, pxuid);
+			}
+		}
 		return original(a1, p);
 	}
 	

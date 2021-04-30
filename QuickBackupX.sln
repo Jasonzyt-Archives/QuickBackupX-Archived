@@ -20,8 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickBackup", "QuickBackup"
 		QuickBackupX\file.h = QuickBackupX\file.h
 		QuickBackupX\func.cpp = QuickBackupX\func.cpp
 		QuickBackupX\func.h = QuickBackupX\func.h
-		QuickBackupX\json.cpp = QuickBackupX\json.cpp
-		QuickBackupX\json.h = QuickBackupX\json.h
 		QuickBackupX\logger.cpp = QuickBackupX\logger.cpp
 		QuickBackupX\logger.h = QuickBackupX\logger.h
 		QuickBackupX\md5.cpp = QuickBackupX\md5.cpp
@@ -33,6 +31,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickBackup", "QuickBackup"
 		QuickBackupX\qbzip.cpp = QuickBackupX\qbzip.cpp
 		QuickBackupX\qbzip.h = QuickBackupX\qbzip.h
 		README.md = README.md
+		QuickBackupX\record.cpp = QuickBackupX\record.cpp
+		QuickBackupX\record.h = QuickBackupX\record.h
+		QuickBackupX\sqlite.cpp = QuickBackupX\sqlite.cpp
+		QuickBackupX\sqlite.h = QuickBackupX\sqlite.h
 		TODO.md = TODO.md
 		Update.md = Update.md
 	EndProjectSection
@@ -57,12 +59,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JsonCPP", "JsonCPP", "{6944
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QBX-EXE", "QBX-EXE\QBX-EXE.vcxproj", "{B1D53179-369B-4F04-902D-7CA7B21040FE}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bundle", "Bundle", "{31857931-B9A1-42BE-B458-D11133E64A33}"
-	ProjectSection(SolutionItems) = preProject
-		QuickBackupX\bundle\bundle.cpp = QuickBackupX\bundle\bundle.cpp
-		QuickBackupX\bundle\bundle.h = QuickBackupX\bundle\bundle.h
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -94,7 +90,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{694434D7-2784-42D5-9139-123803694832} = {9A630783-8982-4716-BADC-7BD216C49A4B}
-		{31857931-B9A1-42BE-B458-D11133E64A33} = {9A630783-8982-4716-BADC-7BD216C49A4B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D9E7DE0C-C995-4CDA-8D7E-D017C0BF683A}

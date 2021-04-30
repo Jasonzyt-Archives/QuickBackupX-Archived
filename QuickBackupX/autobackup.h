@@ -5,7 +5,7 @@
 #include "pch.h"
 #include "config.h"
 #include "backup.h"
-#include "json.h"
+#include "record.h"
 #include "logger.h"
 
 namespace QuickBackupX
@@ -16,6 +16,7 @@ namespace QuickBackupX
 		bool Run();
 		bool Init();
 		bool is_on = false; // 若要关闭自动备份,直接将此变量设为false即可
+		bool cancel = false;
 		std::vector<std::time_t> time;
 	//private:
 		int getLocalMinute();

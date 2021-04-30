@@ -5,8 +5,11 @@
 
 #BDX SDK
 QuickBackupX-BDX/bdx/
+#LiteLoader SDK
+QuickBackupX-BDXCore/llsdk/
 #Bundle Libraey Files
-QuickBackupX/bundle/deps/
+QuickBackupX/bundle/deps/*
+*.bat
 
 # User-specific files
 *.rsuser

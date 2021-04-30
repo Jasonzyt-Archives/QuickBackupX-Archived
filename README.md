@@ -1,8 +1,15 @@
 ﻿# QuickBackupX
-### The OOP Version of QuickBackup-BDS
-### ©2020-2021 Jasonzyt All rights reserved.
-### [QQGroup](https://jq.qq.com/?wv=1027&k=XQ95YehZ)  [Sponsor](http://pay.sa2y.net/paypage/?merchant=97a6ueUjyemLZeyQZK3TaCKluhQu5FTZM2LvKrX%2Btlpm)
-### English is not supported for the time being. If there is a demand, you can submit an issue
+The OOP Version of QuickBackup-BDS    
+©2020-2021 Jasonzyt All rights reserved.    
+[QQGroup](https://jq.qq.com/?wv=1027&k=XQ95YehZ)  [Sponsor](http://pay.sa2y.net/paypage/?merchant=97a6ueUjyemLZeyQZK3TaCKluhQu5FTZM2LvKrX%2Btlpm)    
+English is not supported for the time being. If there is a demand, you can submit an issue or a pull request   
+
+## [Wiki](https://github.com/Jasonzyt/QuickBackupX/wiki)
+- 在提问之前,请先查看Wiki有没有对您的问题作出解释或回答
+
+## 说明
+本插件基于GPLv3.0协议开源    
+部分资料因某些原因不能公开 见谅
 
 ## 为什么使用QuickBackupX?
 - 轻松创建备份(make)
@@ -10,10 +17,10 @@
 - 全自动备份(auto)
 - 快速从备份回档(back) //未实现的功能
 - 轻松控制自动备份
-- 完整的配置文件,几乎可以操作任何一个有用的变量(更多变量请发送[Issue](https://github.com/Jasonzyt/QuickBackupX/issues/new))
+- 完整的配置文件,几乎可以操作任何一个有用的变量w2
 - 无需第三方软件进行压缩,可自控压缩等级
 - 完整的权限系统
-- 支持命令方块
+- 支持命令方块执行备份
 - 对接游戏save hold/query,减少崩服概率 // 未实现的功能
 - 多线程压缩文件,更高效
 - 开源项目,不存在任何病毒
@@ -23,27 +30,6 @@
 
 ## 注意!
 - 本插件所需要的目录都不要包含中文/特殊字符,建议全部使用ASCII字符
-
-## 说明
-本插件基于GPLv3.0协议开源    
-部分资料因某些原因不能公开 见谅
-
-## 鸣谢
-- [Mojang](https://github.com/Mojang)和[Microsoft](https://microsoft.com)开发的[Minecraft](https://minecraft.net/)游戏
-- @TISUnion 的JE插件[QuickBackupM](https://www.github.com/TISUnion/QuickBackupM)给予的灵感
-- [ZipUtils](https://www.codeproject.com/Articles/7530/Zip-Utils-Clean-Elegant-Simple-Cplusplus-Win)可以方便的压缩文件(尽管有一些Bug)
-- [JsonCPP](https://github.com/open-source-parsers/jsoncpp)库让我操作JSON时方便了很多
-- [OpenSSL](https://github.com/openssl/openssl)中的MD5相关操作十分好用
-- [BDX SDK]()提供了近乎完美的API
-- [Sysca11](https://github.com/Sysca11)在开发本插件的过程中,他帮了我许多忙
-- [Bundle](https://github.com/r-lyeh-archived/bundle)支持24种压缩算法压缩,作者牛逼
-
-## 插件使用的第三方库
-- [ZipUtils](https://www.codeproject.com/Articles/7530/Zip-Utils-Clean-Elegant-Simple-Cplusplus-Win) [4.0.0_Beta-4.1.4_Beta]
-- [JsonCPP](https://github.com/open-source-parsers/jsoncpp) [4.0.0_Beta-NOW] MIT
-- [OpenSSL](https://github.com/openssl/openssl) [4.0.0_Beta-NOW] Apache-2.0
-- [BDX SDK]() NOT USED
-- [Bundle](https://github.com/r-lyeh-archived/bundle) [4.1.4_Beta-NOW] ZLib_License
 
 ## 安装方法
 1. 从[Release](https://github.com/Jasonzyt/QuickBackupX/releases)下载插件文件(.dll)
@@ -74,8 +60,10 @@
   [√] 控制台 [√] 玩家 [X] 命令方块。  
 [!] 标有* 的参数表示可省略
 
-## 玩家权限说明
+## 权限说明
 [!] 高级权限玩家可以执行所有低级权限
+### Console Level[3]
+- 所有功能
 ### Admin Level[2]
 - 可以执行Backup Back Auto Del
 - 接收QB所有玩家相关的信息(方便管理)
@@ -84,7 +72,9 @@
 - 仅可以执行Backup
 ### Back Level[1]
 - 仅可以执行Back
-### 普通玩家 Level[0]
+### CmdBlk Level[0]
+- 如果配置运行,则可以执行Make
+### Player Level[0]
 - 可以删除自己执行的备份
 
 ## 文件说明

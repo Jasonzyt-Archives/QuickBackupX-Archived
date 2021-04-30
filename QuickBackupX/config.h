@@ -30,10 +30,9 @@ namespace QuickBackupX
 		std::map<std::string, std::string> backup; // Can Backup Player Vector
 		std::map<std::string, std::string> back; // Can Back Player Vector
 		bool getConfig();
-		bool AddConfig();
-		bool AddPermissionXuid(PerType per, std::string name, std::string xuid);
+		bool AddPermission();
+		bool EditPermissionXuid(PerType per, std::string name, std::string xuid);
 		bool EditPermissionName(PerType per, std::string xuid, std::string name);
-		bool PlayerIsAdmin(std::string name, std::string xuid);
 		std::string getBackupDir();
 		std::string getBackupDirC();
 		std::string getBackupDisk();

@@ -27,7 +27,7 @@
 ### 优化
 - 优化Backup::CheckPermission系列函数()
 - 优化Log内容(将错误和警告的源码详细位置记录清楚)(需开启Debug模式)
-- 优化BRecJson类(减少BRecJson::ListRecord函数调用次数)
+- 优化BRecord类(减少BRecord::ListRecord函数调用次数)
 - 优化删除备份
 - 若备份被手动删除,在启动时就删除该备份的记录
 - 若备份失败则不获取相关信息
@@ -61,7 +61,7 @@
 - 修复了插件文件夹创建太晚的bug
 - 修复命令错误输出乱码的bug
 
-## 4.1.3 Beta
+## v4.1.3 Beta
 支持的注入器: BDX,BDXCore,LiteLoader    
 依赖: Visual C++ Runtime(x86_64)
 ### 新功能
@@ -71,7 +71,7 @@
 ### 修复
 - 修复了save hold命令执行时总比备份执行晚的bug(并不是最优解决方案 欢迎PR)
 
-## 4.1.4 Alpha
+## v4.1.4 Alpha
 支持的注入器: BDX,BDXCore,LiteLoader    
 依赖: Visual C++ Runtime(x86_64)
 ### 注意
@@ -93,7 +93,33 @@
 - 优化了AutoBackup时间配置存储: vector<int> => time_t
 ### 优化
 - 增加了编译器命令行选项: /utf-8,以改善乱码
+- 优化了配置模块
+- 优化了AutoBackup时间配置存储: vector<int> => time_t
 ### 已知Bugs
 - `qb auto list`命令会造成服务端崩溃
 
-## v4.1.5 Beta [Coming soon]
+## v4.1.5 Beta
+支持的注入器: BDX,BDXCore,LiteLoader 
+支持的服务端版本: 1.16.0.02-1.16.210.03
+依赖: Visual C++ Runtime(x86_64)
+### 注意
+- 首次尝试使用Command Register,命令相关问题欢迎提出
+### 新功能
+- 完全脱离对ZipUtils的依赖
+- 现在可以取消下一次的自动备份了
+- 现在游戏命令注册已完成
+- 现在所有的备份都使用SQLite进行记录了
+### 优化
+- 优化了配置,现在可以自动根据Name在玩家进入时补全Xuid了
+- 移除了命令方块模式的记录存储(大部分情况下用不到)
+- 增加了编译器命令行选项: /MD,以降低插件大小
+- 将Bundle库精简,只留下有用的4000多行
+- QBZIP类增加了一些内部函数
+### 修复
+- 修复了EULA.txt会多次写入的bug
+- 修复了List不分页不会输出结果的bug
+- 修复了命令注册的大部分问题
+### 已知BUG
+- 部分情况下List中Time无法显示
+
+## v4.1.6 Beta [Coming soon]

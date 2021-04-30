@@ -252,13 +252,13 @@ namespace QuickBackupX
 			return str;
 		}
 	};
-	inline bool runcmd(std::string cmd)
+	bool runcmd(std::string cmd)
 	{
 		if (p_spscqueue != 0)
 			return SYMCALL<bool>("??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$SPSCQueue@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@$0CAA@@@AEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z", p_spscqueue, cmd);
 		return false;
 	}
-	inline bool sendText(std::string playername, std::string text)
+	bool sendText(std::string playername, std::string text)
 	{
 		if (OnlineQuan == 0) return false;
 		std::string cmd;

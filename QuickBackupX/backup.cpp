@@ -2,7 +2,7 @@
 #include "backup.h"
 #include "config.h"
 #include "logger.h"
-#include "json.h"
+#include "record.h"
 #include "md5.h"
 #pragma warning(disable:4996)
 
@@ -15,10 +15,10 @@ namespace QuickBackupX
 {
 	string Backup::Executor::to_string()
 	{
-		if (type == Console_Type)     return "[Console]";
-		else if (type == Player_Type) return string("[Player]") + pname;
-		else if (type == Block_Type)  return string("[CMDBlock]") + cbpos;
-		else if (type == Backup::Executor::Type::AutoBackup) return "[AutoBackup]";
+		if (type == Console_Type)      return "[Console]";
+		else if (type == Player_Type)  return string("[Player]") + pname;
+		else if (type == Block_Type)   return string("[Block]") + cbpos;
+		else if (type == AutoBak_Type) return "[AutoBackup]";
 		return "[Unknown]";
 	}
 
@@ -70,17 +70,21 @@ namespace QuickBackupX
 		return rv;
 	}
 
-	Backup::Backup()
+	Backup::Backup(string bnote)
 	{
 		string lp = "./worlds/" + getLevelName() + "/";
+		this->note = bnote;
 		this->lpath = filesystem::path(lp);
-		this->onum = rec->blist.size() + 1;
+		this->id = rec->blist.size() + 1;
 	}
+
+	Backup::~Backup() {}
 
 	bool Backup::Make(Backup::Executor exer)
 	{
 		this->exer = exer;
 		this->time = getTime();
+		cout << this->time << endl;
 		Directory leveld(this->lpath);
 		string bdisk = cfg->getBackupDisk();
 		size_t lsize = leveld.dirsize();
@@ -101,8 +105,8 @@ namespace QuickBackupX
 			return false;
 		}
 		PR(u8"创建备份...");
-		runcmd("save hold");
-		this_thread::sleep_for(chrono::milliseconds(2500));
+		//runcmd("save hold");
+		//this_thread::sleep_for(chrono::milliseconds(2500));
 		sendText("all", string("§b[QuickBackupX] 开始创建备份: ") + this->time);
 		ULARGE_INTEGER bavfree;
 		ULARGE_INTEGER btotal;
@@ -121,11 +125,11 @@ namespace QuickBackupX
 		Debug{ L_INFO("备份开始计时"); }
 		QueryPerformanceFrequency(&freq);
 		QueryPerformanceCounter(&begin);
-		ZRESULT res = this->Create(); // 执行备份
+		bool res = this->Create(); // 执行备份
 		QueryPerformanceCounter(&end);
 		timec = (double)(end.QuadPart - begin.QuadPart) / (double)freq.QuadPart; // 获取计时结果
 
-		if (res == ZR_OK)
+		if (res)
 		{
 			Debug{ L_INFO("开始获取备份信息"); }
 			if (!filesystem::exists(this->path))
@@ -143,7 +147,6 @@ namespace QuickBackupX
 			int quan = rec->blist.size();
 			string ssize = SizeToString(this->size);
 			string disk = this->path.string().substr(0, 3);
-
 			ULARGE_INTEGER avfree;
 			ULARGE_INTEGER total;
 			ULARGE_INTEGER free;
@@ -152,15 +155,12 @@ namespace QuickBackupX
 			{
 				L_ERROR("除零警告!!!");
 				PRERR(u8"除零警告!!!");
-				Sleep(3000);
-				throw 103;
 				return false;
 			}
 			float diskur = (to_GB(total) - to_GB(avfree)) / to_GB(total) * 100;
 			float diskus = to_GB(total) - to_GB(free);
 			double fcompr = ((double)this->size / lsize) * 100;
 			string compr = round_str(fcompr, 2) + "%";
-
 			L_INFO("备份成功(0)");
 			PR(u8"备份完成! (耗时 " << timec << u8" 秒)");
 			sendText("all", string("§a备份完成! (耗时 ") + to_string(timec) + u8" 秒)");
@@ -180,32 +180,29 @@ namespace QuickBackupX
 			sendText("all", string("§5当前共有 ") + to_string(quan) + " 个备份 发送\\\"qb list\\\"以获得更多备份信息");
 			return true;
 		}
-		else
-		{
-			PR(u8"备份失败~ ([" << res << "]" << to_UTF8(ZipRetCheck(res)) << ")");
-			sendText("all", "§c备份失败~ 请联系服主");
-			L_ERROR(string("备份失败: (") + to_string(res) + ")" + ZipRetCheck(res));
-			return false;
-		}
+		PR(u8"备份失败~ ([" << res << "]");
+		sendText("all", "§c备份失败~ 请联系服主");
+		L_ERROR(string("备份失败: (") + to_string(res) + ")");
+		return false;
 	}
 
 	bool Backup::Delete(Backup::Executor exer)
 	{
-		L_INFO(string("删除备份[") + to_string(this->onum) + "]");
+		L_INFO(string("删除备份[") + to_string(this->id) + "]");
 		if (this->CheckDeletePermission(exer))
 		{
 			if (!filesystem::exists(this->path))
 			{
-				L_WARNING(string("- 未找到备份[") + to_string(this->onum) + "] " + this->path.string() + " 文件");
-				PRWARN(u8"未找到备份[" << this->onum << "] " << this->path.string() << u8" 文件");
-				PR(u8"删除备份[" << this->onum << u8"] 的记录...");
-				bool drres = rec->DeleteRecord(this->onum);
+				L_WARNING(string("- 未找到备份[") + to_string(this->id) + "] " + this->path.string() + " 文件");
+				PRWARN(u8"未找到备份[" << this->id << "] " << this->path.string() << u8" 文件");
+				PR(u8"删除备份[" << this->id << u8"] 的记录...");
+				bool drres = rec->DeleteRecord(this->id);
 				if (exer.type == Player_Type)
 				{
-					sendText(exer.pname, string("§e未找到备份[") + to_string(this->onum) + "] " + this->path.string() + " 文件");
-					TellAdmin(string("§e未找到备份[") + to_string(this->onum) + "] " + this->path.string() + " 文件");
-					sendText(exer.pname, string("§c备份[") + to_string(this->onum) + "] 记录已删除");
-					TellAdmin(string("§c备份[") + to_string(this->onum) + "] 记录已删除");
+					sendText(exer.pname, string("§e未找到备份[") + to_string(this->id) + "] " + this->path.string() + " 文件");
+					TellAdmin(string("§e未找到备份[") + to_string(this->id) + "] " + this->path.string() + " 文件");
+					sendText(exer.pname, string("§c备份[") + to_string(this->id) + "] 记录已删除");
+					TellAdmin(string("§c备份[") + to_string(this->id) + "] 记录已删除");
 				}
 				return true;
 			}
@@ -216,7 +213,7 @@ namespace QuickBackupX
 				bool fsres = filesystem::remove(this->path);
 				//PR(u8"删除备份记录...");
 				L_INFO("- 删除备份记录...");
-				bool drres = rec->DeleteRecord(this->onum);
+				bool drres = rec->DeleteRecord(this->id);
 				if (!fsres)
 				{
 					PRERR(u8"删除备份文件时出现了异常!!!");
@@ -232,7 +229,6 @@ namespace QuickBackupX
 					PR(u8"删除成功!");
 					L_INFO("- 删除成功!");
 				}
-				//delete this; MSVC编译正常,其他平台可能不会起作用
 			}
 		}
 		else
@@ -257,23 +253,11 @@ namespace QuickBackupX
 				sendText(exer.pname, "需要回档的存档已不存在!删除记录...");
 				TellAdmin("需要回档的存档已不存在!删除记录...");
 			}
-			rec->DeleteRecord(this->onum);
+			rec->DeleteRecord(this->id);
 			return false;
 		}
 		L_INFO("打开备份...");
-		/*HZIP hz = OpenZip(this->path.wstring().c_str(), 0);
-		ZIPENTRY ze; 
-		GetZipItem(hz, -1, &ze); 
-		int numitems = ze.index;
-		L_INFO("开始解压...");
-		for (int i = 0; i < numitems; i++)
-		{
-			GetZipItem(hz, i, &ze);
-			Debug{ L_INFO(string("- 解压 ") + filesystem::path(ze.name).string() + " 至 " + RESUMEDIR + filesystem::path(ze.name).string()); }
-			UnzipItem(hz, i, CharToWChar((RESUMEDIR + filesystem::path(ze.name).string()).c_str()));
-		}
-		ZRESULT res = CloseZip(hz);*/
-		if (ZR_OK)
+		if (0)
 		{
 			L_INFO("解压成功(0)");
 			PR(u8"解压成功!");
@@ -350,7 +334,7 @@ namespace QuickBackupX
 		return false;
 	}
 
-	ZRESULT Backup::Create()
+	bool Backup::Create()
 	{
 		int i;
 		string bpath = to_UTF8(getCustomTime(cfg->bop.c_str()));
@@ -374,18 +358,17 @@ namespace QuickBackupX
 			i++;
 		}
 		QBZIP zip(bpath);
+		zip.Init();
 		L_INFO(string("开始压缩 共有 ") + to_string(flsize) + " 个文件待压缩");
 		PR(u8"开始压缩 共有 " << flsize << u8" 个文件待压缩");
 		sendText("all", string("§e开始压缩 共有 ") + to_string(flsize) + " 个文件待压缩");
-		using FUNC = bool(QBZIP::*)(map<string, string>);
-		FUNC add1 = &QBZIP::Add;
-		thread th(bind(add1, ref(zip), this->flist));
-		th.join();
+		zip.AddFList(this->flist);
 		dir.delete_all();
 		Debug{ L_INFO(string("关闭并写入 ") + bpath + " 文件..."); }
 		zip.Save();
 		if (filesystem::exists(bpath))
 			this->path = filesystem::canonical(filesystem::path(bpath));
-		return 0i64;
+		else return false;
+		return true;
 	}
 }

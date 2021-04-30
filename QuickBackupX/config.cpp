@@ -17,34 +17,109 @@ namespace QuickBackupX
 	{
 		int i = 0;
 		Json::Value jarr;
+		map<string, string> perm;
 		switch (per)
 		{
 		case Config::PerType::Admin:
 			jarr = this->cfgjv["Admin_Player"];
+			perm = this->admins;
 			break;
 		case Config::PerType::Backup:
 			jarr = this->cfgjv["Backup_Player"];
+			perm = this->backup;
 			break;
 		case Config::PerType::Back:
 			jarr = this->cfgjv["Back_Player"];
+			perm = this->back;
 			break;
 		default:
 			return false;
 			break;
 		}
 		int jarrs = jarr.size();
-		while (i <= jarrs - 1)
+		while (i < jarrs)
 		{
 			if (jarr[i].empty()) continue;
 			if (jarr[i]["Xuid"].asString() == xuid)
 			{
 				this->cfgjv[i]["Name"] = name;
+				perm[xuid] = name;
 				SWriteIntoFile(this->cfgjv, CONFIGFILE);
+				switch (per)
+				{
+				case Config::PerType::Admin:
+					this->admins = perm;
+					break;
+				case Config::PerType::Backup:
+					this->backup = perm;
+					break;
+				case Config::PerType::Back:
+					this->back = perm;
+					break;
+				default:
+					return false;
+					break;
+				}
 				return true;
 			}
 			i++;
 		}
 	}
+
+	bool Config::EditPermissionXuid(PerType per, string name, string xuid)
+	{
+		int i = 0;
+		Json::Value jarr;
+		map<string, string> perm;
+		switch (per)
+		{
+		case Config::PerType::Admin:
+			jarr = this->cfgjv["Admin_Player"];
+			perm = this->admins;
+			break;
+		case Config::PerType::Backup:
+			jarr = this->cfgjv["Backup_Player"];
+			perm = this->backup;
+			break;
+		case Config::PerType::Back:
+			jarr = this->cfgjv["Back_Player"];
+			perm = this->back;
+			break;
+		default:
+			return false;
+			break;
+		}
+		int jarrs = jarr.size();
+		while (i < jarrs)
+		{
+			if (jarr[i].empty()) continue;
+			if (jarr[i]["Xuid"].asString().empty() && 
+				jarr[i]["Name"].asString() == name)
+			{
+				this->cfgjv[i]["Xuid"] = xuid;
+				perm[name] = xuid;
+				SWriteIntoFile(this->cfgjv, CONFIGFILE);
+				switch (per)
+				{
+				case Config::PerType::Admin:
+					this->admins = perm;
+					break;
+				case Config::PerType::Backup:
+					this->backup = perm;
+					break;
+				case Config::PerType::Back:
+					this->back = perm;
+					break;
+				default:
+					return false;
+					break;
+				}
+				return true;
+			}
+			i++;
+		}
+	}
+
 
 	string Config::getBackupDir()
 	{
@@ -108,7 +183,7 @@ namespace QuickBackupX
 		if (jvi != 0)
 		{
 			i = 0;
-			while (i <= jvi - 1)
+			while (i < jvi)
 			{
 				if (jv[i].empty()) continue;
 				if (!jv[i].isObject()) continue;

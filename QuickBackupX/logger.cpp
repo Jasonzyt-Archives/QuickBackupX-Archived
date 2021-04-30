@@ -52,7 +52,8 @@ namespace QuickBackupX
 				this->status = false;
 				return false;
 			}
-			this->fp << "[" << getTime() << " INFO] " << evt << endl;
+			vector<string> vec = split(evt, '\n');
+			for (auto& it : vec) this->fp << "[" << getTime() << " INFO] " << it << endl;
 			return true;
 		}
 		return false;
@@ -67,14 +68,18 @@ namespace QuickBackupX
 				this->status = false;
 				return false;
 			}
-			if (cfg->debug && fun != "" && line != -1 && file != "")
-				this->fp << "[" << getTime() << " WARN] " << evt << " (" << fun << ")(" << fn << ":" << line << ")" << endl;
-			else if (cfg->debug && fun != "" && file != "")
-				this->fp << "[" << getTime() << " WARN] " << evt << " (" << fun << ")(" << fn << ")" << endl;
-			else if (cfg->debug && fun != "")
-				this->fp << "[" << getTime() << " WARN] " << evt << " (" << fun << ")" << endl;
-			else
-				this->fp << "[" << getTime() << " WARN] " << evt << endl;
+			vector<string> vec = split(evt, '\n');
+			for (auto& it : vec)
+			{
+				if (cfg->debug && fun != "" && line != -1 && file != "")
+					this->fp << "[" << getTime() << " WARN] " << evt << " (" << fun << ")(" << fn << ":" << line << ")" << endl;
+				else if (cfg->debug && fun != "" && file != "")
+					this->fp << "[" << getTime() << " WARN] " << evt << " (" << fun << ")(" << fn << ")" << endl;
+				else if (cfg->debug && fun != "")
+					this->fp << "[" << getTime() << " WARN] " << evt << " (" << fun << ")" << endl;
+				else
+					this->fp << "[" << getTime() << " WARN] " << evt << endl;
+			}
 			return true;
 		}
 		return false;
@@ -90,14 +95,18 @@ namespace QuickBackupX
 				this->status = false;
 				return false;
 			}
-			if (cfg->debug && fun != "" && line != -1 && file != "")
-				this->fp << "[" << getTime() << " ERROR] " << evt << " (" << fun << ")(" << fn << ":" << line << ")" << endl;
-			else if (cfg->debug && fun != "" && file != "")
-				this->fp << "[" << getTime() << " ERROR] " << evt << " (" << fun << ")(" << fn << ")" << endl;
-			else if (cfg->debug && fun != "")
-				this->fp << "[" << getTime() << " ERROR] " << evt << " (" << fun << ")" << endl;
-			else
-				this->fp << "[" << getTime() << " ERROR] " << evt << endl;
+			vector<string> vec = split(evt, '\n');
+			for (auto& it : vec)
+			{
+				if (cfg->debug && fun != "" && line != -1 && file != "")
+					this->fp << "[" << getTime() << " ERROR] " << evt << " (" << fun << ")(" << fn << ":" << line << ")" << endl;
+				else if (cfg->debug && fun != "" && file != "")
+					this->fp << "[" << getTime() << " ERROR] " << evt << " (" << fun << ")(" << fn << ")" << endl;
+				else if (cfg->debug && fun != "")
+					this->fp << "[" << getTime() << " ERROR] " << evt << " (" << fun << ")" << endl;
+				else
+					this->fp << "[" << getTime() << " ERROR] " << evt << endl;
+			}
 			return true;
 		}
 		return false;
@@ -112,14 +121,18 @@ namespace QuickBackupX
 				this->status = false;
 				return false;
 			}
-			if (cfg->debug && fun != "" && line != -1 && file != "")
-				this->fp << "[" << getTime() << " DEBUG] " << evt << " (" << fun << ")(" << fn << ":" << line << ")" << endl;
-			else if (cfg->debug && fun != "" && file != "")
-				this->fp << "[" << getTime() << " DEBUG] " << evt << " (" << fun << ")(" << fn << ")" << endl;
-			else if (cfg->debug && fun != "")
-				this->fp << "[" << getTime() << " DEBUG] " << evt << " (" << fun << ")" << endl;
-			else
-				this->fp << "[" << getTime() << " DEBUG] " << evt << endl;
+			vector<string> vec = split(evt, '\n');
+			for (auto& it : vec)
+			{
+				if (cfg->debug && fun != "" && line != -1 && file != "")
+					this->fp << "[" << getTime() << " DEBUG] " << evt << " (" << fun << ")(" << fn << ":" << line << ")" << endl;
+				else if (cfg->debug && fun != "" && file != "")
+					this->fp << "[" << getTime() << " DEBUG] " << evt << " (" << fun << ")(" << fn << ")" << endl;
+				else if (cfg->debug && fun != "")
+					this->fp << "[" << getTime() << " DEBUG] " << evt << " (" << fun << ")" << endl;
+				else
+					this->fp << "[" << getTime() << " DEBUG] " << evt << endl;
+			}
 			return true;
 		}
 		return false;
@@ -134,14 +147,18 @@ namespace QuickBackupX
 				this->status = false;
 				return false;
 			}
-			if (cfg->debug && fun != "" && line != -1 && file != "")
-				this->fp << "[" << getTime() << " " << tag << "]" << tags << " " << evt << " (" << fun << ")(" << fn << ":" << line << ")" << endl;
-			else if (cfg->debug && fun != "" && file != "")
-				this->fp << "[" << getTime() << " " << tag << "]" << tags << " " << evt << " (" << fun << ")(" << fn << ")" << endl;
-			else if (cfg->debug && fun != "")
-				this->fp << "[" << getTime() << " " << tag << "]" << tags << " " << evt << " (" << fun << ")" << endl;
-			else
-				this->fp << "[" << getTime() << " " << tag << "]" << tags << " " << evt << endl;
+			vector<string> vec = split(evt, '\n');
+			for (auto& it : vec)
+			{
+				if (cfg->debug && fun != "" && line != -1 && file != "")
+					this->fp << "[" << getTime() << " " << tag << "]" << tags << " " << evt << " (" << fun << ")(" << fn << ":" << line << ")" << endl;
+				else if (cfg->debug && fun != "" && file != "")
+					this->fp << "[" << getTime() << " " << tag << "]" << tags << " " << evt << " (" << fun << ")(" << fn << ")" << endl;
+				else if (cfg->debug && fun != "")
+					this->fp << "[" << getTime() << " " << tag << "]" << tags << " " << evt << " (" << fun << ")" << endl;
+				else
+					this->fp << "[" << getTime() << " " << tag << "]" << tags << " " << evt << endl;
+			}
 			return true;
 		}
 		return false;

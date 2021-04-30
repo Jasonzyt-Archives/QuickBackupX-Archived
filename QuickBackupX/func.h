@@ -23,7 +23,6 @@ namespace QuickBackupX
 	std::string round_str(double x, int pre);
 	std::string SizeToString(size_t size);
 	std::string to_UTF8(const std::string& str);
-	std::string ZipRetCheck(int in);
 	// JsonÏà¹Ø²Ù×÷
 	Json::Value getJSON(std::string fn);
 	bool SWriteIntoFile(Json::Value root, std::string fn);

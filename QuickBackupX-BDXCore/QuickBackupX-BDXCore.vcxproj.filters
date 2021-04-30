@@ -11,9 +11,6 @@
     <ClCompile Include="..\QuickBackupX\func.cpp">
       <Filter>QBX</Filter>
     </ClCompile>
-    <ClCompile Include="..\QuickBackupX\json.cpp">
-      <Filter>QBX</Filter>
-    </ClCompile>
     <ClCompile Include="..\QuickBackupX\logger.cpp">
       <Filter>QBX</Filter>
     </ClCompile>
@@ -28,12 +25,6 @@
     </ClCompile>
     <ClCompile Include="..\QuickBackupX\json\json_writer.cpp">
       <Filter>QBX\JsonCPP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\QuickBackupX\zip\unzip.cpp">
-      <Filter>QBX\ZIP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\QuickBackupX\zip\zip.cpp">
-      <Filter>QBX\ZIP</Filter>
     </ClCompile>
     <ClCompile Include="..\QuickBackupX\properties.cpp">
       <Filter>QBX</Filter>
@@ -50,8 +41,11 @@
     <ClCompile Include="..\QuickBackupX\qbzip.cpp">
       <Filter>QBX</Filter>
     </ClCompile>
-    <ClCompile Include="..\QuickBackupX\bundle\bundle.cpp">
-      <Filter>QBX\Bundle</Filter>
+    <ClCompile Include="..\QuickBackupX\record.cpp">
+      <Filter>QBX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\QuickBackupX\sqlite.cpp">
+      <Filter>QBX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -61,17 +55,16 @@
     <Filter Include="QBX\JsonCPP">
       <UniqueIdentifier>{bcf0164c-fe07-4468-9827-d00eb2360ffb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="QBX\ZIP">
-      <UniqueIdentifier>{9526e780-b9be-4dda-878f-73ab8bed0d80}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="QBX\Bundle">
-      <UniqueIdentifier>{15e790c3-bc7f-4176-945e-4cab38cd1f04}</UniqueIdentifier>
+    <Filter Include="QBX\SQLite3">
+      <UniqueIdentifier>{83c6ee52-4f90-44bc-81a8-476634f55cff}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\QuickBackupX\chakra.lib">
+    <Library Include="..\QuickBackupX\lib\chakra.lib" />
+    <Library Include="llsdk\LLRegCMD.lib">
       <Filter>QBX</Filter>
     </Library>
+    <Library Include="..\QuickBackupX\lib\sqlite3.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\QuickBackupX\bds.hpp">
@@ -95,9 +88,6 @@
     <ClInclude Include="..\QuickBackupX\func.h">
       <Filter>QBX</Filter>
     </ClInclude>
-    <ClInclude Include="..\QuickBackupX\json.h">
-      <Filter>QBX</Filter>
-    </ClInclude>
     <ClInclude Include="..\QuickBackupX\logger.h">
       <Filter>QBX</Filter>
     </ClInclude>
@@ -113,22 +103,26 @@
     <ClInclude Include="..\QuickBackupX\qbzip.h">
       <Filter>QBX</Filter>
     </ClInclude>
-    <ClInclude Include="..\QuickBackupX\bundle\bundle.h">
-      <Filter>QBX\Bundle</Filter>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\QuickBackupX\record.h">
+      <Filter>QBX</Filter>
     </ClInclude>
-    <ClInclude Include="..\QuickBackupX\zip\unzip.h">
-      <Filter>QBX\ZIP</Filter>
+    <ClInclude Include="..\QuickBackupX\sqlite.h">
+      <Filter>QBX</Filter>
     </ClInclude>
-    <ClInclude Include="..\QuickBackupX\zip\zip.h">
-      <Filter>QBX\ZIP</Filter>
+    <ClInclude Include="..\QuickBackupX\sqlite3\sqlite3.h">
+      <Filter>QBX\SQLite3</Filter>
     </ClInclude>
-    <ClInclude Include="..\QuickBackupX\zip\ZipDefine.h">
-      <Filter>QBX\ZIP</Filter>
+    <ClInclude Include="..\QuickBackupX\sqlite3\sqlite3ext.h">
+      <Filter>QBX\SQLite3</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\QuickBackupX\json\json_valueiterator.inl">
       <Filter>QBX\JsonCPP</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
 </Project>
