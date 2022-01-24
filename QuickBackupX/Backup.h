@@ -34,7 +34,26 @@ public:
 
 private:
 
-    static bool checkDiskSpace(size_t size);
+    static bool checkDiskSpace(char disk, size_t size);
     static bool packZip(std::string path, std::string dst);
+
+};
+
+class RemoteBackup : public Backup {
+
+public:
+
+    size_t size;
+
+    bool del();
+    bool resume();
+    bool download();
+    bool downloadZip();
+    bool isRemote();
+    static RemoteBackup* make(Executor exer);
+
+private:
+
+    bool uploadFiles();
 
 };

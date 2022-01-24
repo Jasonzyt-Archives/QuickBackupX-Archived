@@ -27,19 +27,21 @@
 #define PRINT lllog
 #pragma comment(lib,"Lib/LiteLoader.lib")
 #else
+#include "Logger.h"
 #define PRINT coutp.p
 typedef std::string xuid_t;
 #pragma comment(lib,"./LLSDK_1.16/LiteLoader.lib")
 #endif
 
+namespace fs = std::filesystem;
+// Classes
 template <typename COMMITER>
 class OLogger;
 struct stdio_commit;
-namespace fs = std::filesystem;
-// Classes
-class Backup;
+class QuickBackupX;
 // Variable
 extern OLogger<stdio_commit*> coutp;
+extern std::unique_ptr<QuickBackupX> plugin;
 
 const std::string QBX_VERSION = "5.0.0-Beta";
 const std::string QBX_FOLDER  = "./plugins/QuickBackupX/";

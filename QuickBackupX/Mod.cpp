@@ -11,7 +11,7 @@ using namespace std;
 
 #if !defined(BDS_LL)
 stdio_commit sc("[QBX] ");
-OLogger<stdio_commit*> coutp(&sc, true); // Console output
+OLogger<stdio_commit*> logger; // Console output
 #endif
 std::queue<SyncCopy> copyQueue;
 

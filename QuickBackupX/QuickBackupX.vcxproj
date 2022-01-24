@@ -139,10 +139,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;QUICKBACKUPX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\Administrator\Desktop\QuickBackupX\QuickBackupX\LLSDK_1.17;C:\Users\Administrator\Desktop\QuickBackupX\QuickBackupX\LLSDK_1.16;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../LLSDK/Header;./third-party;./LLSDK_1.16;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -154,15 +154,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="backup.h" />
-    <ClInclude Include="logger.h" />
+    <ClInclude Include="Backup.h" />
+    <ClInclude Include="Build.h" />
+    <ClInclude Include="LangPack.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="QuickBackupX.h" />
+    <ClInclude Include="SyncCopy.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="backup.cpp" />
-    <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="mod.cpp" />
+    <ClCompile Include="Backup.cpp" />
+    <ClCompile Include="DLLMain.cpp" />
+    <ClCompile Include="Mod.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="SyncCopy.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="third-party\bundle-zip\zip.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
