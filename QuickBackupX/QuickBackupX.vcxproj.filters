@@ -27,9 +27,6 @@
     <ClInclude Include="Backup.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="Build.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -40,6 +37,15 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="QuickBackupX.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="ZipArchive.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoBackup.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
@@ -59,10 +65,8 @@
     <ClCompile Include="SyncCopy.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="third-party\bundle-zip\zip.lib">
-      <Filter>Lib</Filter>
-    </Library>
+    <ClCompile Include="ZipArchive.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
