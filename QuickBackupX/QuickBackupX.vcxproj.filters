@@ -68,5 +68,22 @@
     <ClCompile Include="ZipArchive.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="AutoBackup.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="QuickBackupX.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="third-party\fmt\fmt.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="third-party\minizip\libminizip.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="third-party\minizip\bzip2.lib">
+      <Filter>Lib</Filter>
+    </Library>
   </ItemGroup>
 </Project>

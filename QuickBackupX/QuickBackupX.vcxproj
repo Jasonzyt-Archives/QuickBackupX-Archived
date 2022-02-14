@@ -139,7 +139,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;QUICKBACKUPX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>./LLSDK/Header;./third-party;./LLSDK_1.16;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -166,12 +166,19 @@
     <ClInclude Include="ZipArchive.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AutoBackup.cpp" />
     <ClCompile Include="Backup.cpp" />
     <ClCompile Include="DLLMain.cpp" />
     <ClCompile Include="Mod.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="QuickBackupX.cpp" />
     <ClCompile Include="SyncCopy.cpp" />
     <ClCompile Include="ZipArchive.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="third-party\fmt\fmt.lib" />
+    <Library Include="third-party\minizip\bzip2.lib" />
+    <Library Include="third-party\minizip\libminizip.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
