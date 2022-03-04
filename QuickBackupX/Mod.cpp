@@ -1,4 +1,7 @@
 #include "pch.h"
+#include "AutoBackup.h"
+#include "LangPack.h"
+#include "Config.h"
 #include "QuickBackupX.h"
 #include "Logger.h"
 #if defined(BDS_LL)
@@ -10,6 +13,7 @@
 using namespace std;
 
 Logger logger("QBX");
+std::unique_ptr<QuickBackupX> plugin;
 
 void entry() {
     logger.info("QuickBackupX v{} loaded! Author: Jasonzyt [{}]", 

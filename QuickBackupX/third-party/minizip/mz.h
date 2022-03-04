@@ -14,8 +14,8 @@
 /***************************************************************************/
 
 /* MZ_VERSION */
-#define MZ_VERSION                      ("3.0.4")
-#define MZ_VERSION_BUILD                (030004)
+#define MZ_VERSION                      ("3.0.1")
+#define MZ_VERSION_BUILD                (030001)
 
 /* MZ_ERROR */
 #define MZ_OK                           (0)  /* zlib */
@@ -147,7 +147,7 @@
 #define MZ_FREE(PTR)                    (free(PTR))
 #endif
 
-#if defined(_WIN32) && defined(MZ_EXPORTS)
+#if defined(_WINDOWS) && defined(MZ_EXPORTS)
 #define MZ_EXPORT __declspec(dllexport)
 #else
 #define MZ_EXPORT
@@ -168,28 +168,28 @@
 #  endif
 #endif
 
-#ifndef INT8_MAX
+#ifndef __INT8_TYPE__
 typedef signed char        int8_t;
 #endif
-#ifndef INT16_MAX
+#ifndef __INT16_TYPE__
 typedef short              int16_t;
 #endif
-#ifndef INT32_MAX
+#ifndef __INT32_TYPE__
 typedef int                int32_t;
 #endif
-#ifndef INT64_MAX
+#ifndef __INT64_TYPE__
 typedef long long          int64_t;
 #endif
-#ifndef UINT8_MAX
+#ifndef __UINT8_TYPE__
 typedef unsigned char      uint8_t;
 #endif
-#ifndef UINT16_MAX
+#ifndef __UINT16_TYPE__
 typedef unsigned short     uint16_t;
 #endif
-#ifndef UINT32_MAX
+#ifndef __UINT32_TYPE__
 typedef unsigned int       uint32_t;
 #endif
-#ifndef UINT64_MAX
+#ifndef __UINT64_TYPE__
 typedef unsigned long long uint64_t;
 #endif
 

@@ -47,7 +47,7 @@ inline std::vector<std::string> split(const std::string& str, char delim) {
     return result;
 }
 
-void from_json(const nlohmann::json& j, LocalBackup& lb) {
+inline void from_json(const nlohmann::json& j, LocalBackup& lb) {
     if (j.count("isRemote") && j["isRemote"]) {
         
     }

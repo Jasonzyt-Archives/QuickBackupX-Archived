@@ -82,5 +82,14 @@
     <Library Include="third-party\minizip\libminizip.lib">
       <Filter>Lib</Filter>
     </Library>
+    <Library Include="third-party\minizip\lzma.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\..\vcpkg\packages\bzip2_x64-windows-static\lib\bz2.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="third-party\minizip\zstd_static.lib">
+      <Filter>Lib</Filter>
+    </Library>
   </ItemGroup>
 </Project>

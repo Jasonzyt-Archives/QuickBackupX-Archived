@@ -151,6 +151,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>Crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:libcmt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -188,8 +190,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <Library Include="..\..\vcpkg\packages\bzip2_x64-windows-static\lib\bz2.lib" />
     <Library Include="third-party\fmt\fmt.lib" />
     <Library Include="third-party\minizip\libminizip.lib" />
+    <Library Include="third-party\minizip\lzma.lib" />
+    <Library Include="third-party\minizip\zstd_static.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
