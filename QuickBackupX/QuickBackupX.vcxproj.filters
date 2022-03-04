@@ -82,8 +82,5 @@
     <Library Include="third-party\minizip\libminizip.lib">
       <Filter>Lib</Filter>
     </Library>
-    <Library Include="third-party\minizip\bzip2.lib">
-      <Filter>Lib</Filter>
-    </Library>
   </ItemGroup>
 </Project>

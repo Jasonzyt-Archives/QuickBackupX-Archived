@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "AutoBackup.h"
 #include "Utils.h"
+#pragma warning(disable: 4996)
+
+bool operator==(const Point& l, const Point& r) {
+    return l.hour == r.hour && l.min == r.min;
+}
 
 bool checkTime(const std::string& str) {
     for (auto& c : str) {
@@ -11,34 +16,24 @@ bool checkTime(const std::string& str) {
     return true;
 }
 
-void AutoBackup::runBackup() {
+void AutoBackup::runBackup(bool remote) {
 }
 
-void AutoBackup::addPoint(const std::string& t, bool once) {
-    auto vec = split(t, ':');
-    if (vec.size() != 2) {
-        logger.warn(tr("Wrong AutoBackup time format: {}. Ignored.", t));
-        return;
-    }
-    if (!checkTime(vec[0]) || !checkTime(vec[1])) {
-        logger.warn(tr("Wrong time: {}. Ignored.", t));
-        return;
-    }
-    auto h = stoi(vec[0]);
-    auto m = stoi(vec[1]);
-    if (h < 0 || h >= 24 || m < 0 || m >= 60) {
-        logger.warn(tr("Wrong time: {}. Ignored.", t));
-        return;
-    }
-    points.push_back({ h, m, once });
+void AutoBackup::addPoint(const std::string& t, bool once, bool remote) {
+    auto p = toPoint(t);
+    p.once = once;
+    p.remote = remote;
+    points.push_back(p);
 }
 
-void AutoBackup::cancel(Point p) {
+bool AutoBackup::cancel(Point p) {
     for (auto& po : points) {
-        if (p.hour == po.hour && p.min == po.min) {
+        if (p == po) {
             p.ignore = true;
+            return true;
         }
     }
+    return false;
 }
 
 void AutoBackup::tick() {
@@ -53,7 +48,7 @@ void AutoBackup::tick() {
                     p.ignore = false;
                     break;
                 }
-                runBackup();
+                runBackup(p.remote);
                 if (p.once) {
                     points.erase(it);
                 }
@@ -63,4 +58,23 @@ void AutoBackup::tick() {
         return;
     }
     timer++;
+}
+
+Point AutoBackup::toPoint(const std::string& str) {
+    auto vec = split(str, ':');
+    if (vec.size() != 2) {
+        logger.warn(tr("Wrong AutoBackup time format: {}. Ignored.", str));
+        return {};
+    }
+    if (!checkTime(vec[0]) || !checkTime(vec[1])) {
+        logger.warn(tr("Wrong time: {}. Ignored.", str));
+        return {};
+    }
+    auto h = stoi(vec[0]);
+    auto m = stoi(vec[1]);
+    if (h < 0 || h >= 24 || m < 0 || m >= 60) {
+        logger.warn(tr("Wrong time: {}. Ignored.", str));
+        return {};
+    }
+    return {h, m};
 }

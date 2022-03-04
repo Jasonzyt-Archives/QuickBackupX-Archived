@@ -63,7 +63,7 @@ public:
         }
         auto timsz = strftime(datebuf, 256, ("[" + timeFmt + " ").c_str(), &_tim);
         strcat_s(datebuf, LVLNAME[int(lvl)].data());
-        cout << datebuf << prefix << text << endl;
+        std::cout << datebuf << prefix << text << std::endl;
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
     }
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "Backup.h"
+#include <nlohmann/json.hpp>
 
 struct DiskUsage {
     uint32_t type;

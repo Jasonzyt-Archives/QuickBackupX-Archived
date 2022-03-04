@@ -1,10 +1,12 @@
 #pragma once
+#include "SyncCopy.h"
 #define PLUGIN_DIR "./plugins/QuickBackupX/"
 
 class Config;
 class LangPack;
 class SyncCopy;
 class Backup;
+class AutoBackup;
 
 class QuickBackupX {
 
@@ -13,6 +15,7 @@ public:
     std::unique_ptr<Config> cfg;
     std::unique_ptr<LangPack> lpk;
     std::queue<SyncCopy> copyQueue;
+    std::unique_ptr<AutoBackup> ab;
 
     QuickBackupX();
     void tick();

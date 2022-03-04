@@ -166,18 +166,29 @@
     <ClInclude Include="ZipArchive.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AutoBackup.cpp" />
-    <ClCompile Include="Backup.cpp" />
-    <ClCompile Include="DLLMain.cpp" />
-    <ClCompile Include="Mod.cpp" />
+    <ClCompile Include="AutoBackup.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Backup.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="DLLMain.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Mod.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="QuickBackupX.cpp" />
-    <ClCompile Include="SyncCopy.cpp" />
-    <ClCompile Include="ZipArchive.cpp" />
+    <ClCompile Include="SyncCopy.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ZipArchive.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="third-party\fmt\fmt.lib" />
-    <Library Include="third-party\minizip\bzip2.lib" />
     <Library Include="third-party\minizip\libminizip.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

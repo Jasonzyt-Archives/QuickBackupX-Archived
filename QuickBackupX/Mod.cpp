@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "QuickBackupX.h"
 #include "Logger.h"
 #if defined(BDS_LL)

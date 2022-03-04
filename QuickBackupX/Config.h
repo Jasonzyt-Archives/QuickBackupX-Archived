@@ -10,7 +10,8 @@ public:
     bool enableRemoteBackup = false;
     std::string backupOutputPath = "./backups";
     std::string remoteBackupServer = "http://address/path/";
-    std::vector<std::string> autoBackupTime = {"08:00", "16:00", "00:00"};
+    std::vector<std::string> localAutoBackupTime{"08:00", "16:00", "00:00"};
+    std::vector<std::string> remoteAutoBackupTime{};
     std::string language = "en_US";
 
     inline void save(const std::string& cfg) {
@@ -19,9 +20,10 @@ public:
             {"backupOutputPath", backupOutputPath},
             {"remoteBackup", {
                 {"enabled", enableRemoteBackup},
-                {"server", remoteBackupServer}
+                {"server", remoteBackupServer},
+                {"autoBackupTime", remoteAutoBackupTime}
             }},
-            {"autoBackupTime", autoBackupTime},
+            {"autoBackupTime", localAutoBackupTime},
             {"language", language}
         };
         std::fstream file(cfg, std::ios::out | std::ios::trunc);
@@ -44,10 +46,11 @@ public:
                 auto& setting = j["remoteBackup"];
                 enableRemoteBackup = setting.value("enabled", false);
                 remoteBackupServer = setting.value("server", "");
+                remoteAutoBackupTime = setting.value("autoBackupTime", std::vector<std::string>{});
             }
             allowCommandBlock = j.value("allowCommandBlock", true);
             backupOutputPath = j.value("backupOutputPath", "./backups");
-            autoBackupTime = j.value("autoBackupTime", std::vector<std::string>{});
+            localAutoBackupTime = j.value("autoBackupTime", std::vector<std::string>{});
             language = j.value("language", "en_US");
             logger.info(tr("Loaded config file: {}", cfg));
         }

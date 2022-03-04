@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "SyncCopy.h"
 
 void SyncCopy::directories(fs::path src, std::string dst) {

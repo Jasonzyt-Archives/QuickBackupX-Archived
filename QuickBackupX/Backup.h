@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include "pch.h"
 
-extern std::unordered_map<std::string, Backup> backups;
+class LocalBackup;
+
+extern std::unordered_map<std::string, LocalBackup> backups;
 
 class Executor {
     enum Type { Unknown, Console, Player, Block, AutoBackup } type;
@@ -27,7 +29,7 @@ class LocalBackup : public Backup {
 
 public:
 
-    std::string md5;
+    std::string sha256;
     std::string path;
 
     bool del();
